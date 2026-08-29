@@ -1,0 +1,217 @@
+[
+  {
+    "event_id": "evt-001",
+    "title": "Masterclass: Generative AI, RAG & Agentic AI using LangGraph",
+    "track": "Deep Tech & Artificial Intelligence",
+    "speaker_name": "Sateesh Ambesange",
+    "speaker_designation": "Founder & AI Architect, PragyanAI | Ph.D. Research Scholar",
+    "speaker_bio": "25+ years in systems architecture, embedded Linux, and generative/agentic AI orchestration frameworks.",
+    "event_date": "2026-09-05",
+    "event_time": "11:00 AM - 1:00 PM IST",
+    "platform": "Google Meet / YouTube Live Stream",
+    "stream_url": "https://meet.google.com/xyz-ai-masterclass",
+    "registration_fee": "Free",
+    "capacity": 500,
+    "registered_count": 342,
+    "is_certified": true,
+    "target_audience": "Pre-University & High School Seniors, 1st/2nd Year B.E. Students, School Educators",
+    "brochure_asset": "data/raw/brochures/GenAI_Outreach_Masterclass_2026.pdf",
+    "prerequisites": "Basic understanding of programming logic (Python familiarity is an added advantage)",
+    "learning_outcomes": [
+      "Understanding Core LLM Architectures and Retrieval-Augmented Generation (RAG)",
+      "Building Stateful Multi-Agent Workflows with LangChain and LangGraph",
+      "Connecting LLMs to Structured Relational Databases and Vector Stores",
+      "Career Trajectories in Agentic AI & Systems Engineering (2026–2030)"
+    ],
+    "agenda": [
+      {
+        "time": "11:00 AM - 11:30 AM",
+        "topic": "Evolution of GenAI: From Prompt Engineering to Autonomous Agents"
+      },
+      {
+        "time": "11:30 AM - 12:15 PM",
+        "topic": "Live Code Sandbox: Building a RAG Assistant with ChromaDB & Groq"
+      },
+      {
+        "time": "12:15 PM - 12:45 PM",
+        "topic": "Orchestrating Multi-Agent Graphs using LangGraph"
+      },
+      {
+        "time": "12:45 PM - 1:00 PM",
+        "topic": "Audience Live Q&A, Career Roadmap & Certificate Distribution"
+      }
+    ]
+  },
+  {
+    "event_id": "evt-002",
+    "title": "KCET, COMEDK & JEE 2026 Option Entry Strategy & College Rank Matcher",
+    "track": "Admissions & Career Guidance",
+    "speaker_name": "Dr. K. S. Venkatesh Murthy",
+    "speaker_designation": "Dean of Admissions & Academic Advisory Board Member",
+    "speaker_bio": "Over 20 years guiding engineering entrance option entry and higher education choices in Karnataka.",
+    "event_date": "2026-09-12",
+    "event_time": "5:00 PM - 6:30 PM IST",
+    "platform": "Zoom Webinar",
+    "stream_url": "https://zoom.us/j/98765432101",
+    "registration_fee": "Free",
+    "capacity": 1000,
+    "registered_count": 815,
+    "is_certified": false,
+    "target_audience": "KCET & COMEDK Aspirants, Parents, PU College Career Counselors",
+    "brochure_asset": "data/raw/brochures/Admissions_Guide_2026.pdf",
+    "prerequisites": "None (Aspirants are advised to keep their provisional entrance ranks handy)",
+    "learning_outcomes": [
+      "Round-wise Cutoff Rank Trends across Top 15 Karnataka Engineering Colleges",
+      "Navigating KEA & COMEDK Option Entry algorithms without losing priority seats",
+      "Evaluating Fee Structures: Govt Quota vs. COMEDK vs. Management Quota",
+      "Specialized vs. Core Branches: CSE, AI/DS, ISE, and ECE ROI Payback Analysis"
+    ],
+    "agenda": [
+      {
+        "time": "5:00 PM - 5:25 PM",
+        "topic": "Historical Cutoff Breakdown & Seat Matrix Trends for 2026"
+      },
+      {
+        "time": "5:25 PM - 5:50 PM",
+        "topic": "The Strategic Option Entry Grid: Avoiding Common Pitfalls"
+      },
+      {
+        "time": "5:50 PM - 6:15 PM",
+        "topic": "Live Interactive Rank Matching & Admission Probability Demo"
+      },
+      {
+        "time": "6:15 PM - 6:30 PM",
+        "topic": "Open Floor Q&A with Admissions Officers"
+      }
+    ]
+  },
+  {
+    "event_id": "evt-003",
+    "title": "Hands-On Robotics, Autonomous Rovers & Micro-Sensors Lab Discovery",
+    "track": "Hardware, IoT & Embedded Systems",
+    "speaker_name": "Dr. Ramesh Kulkarni",
+    "speaker_designation": "Director, Center of Excellence in IoT & Autonomous Systems",
+    "speaker_bio": "Principal investigator on DST and DRDO funded research in autonomous drone navigation and sensor telemetry.",
+    "event_date": "2026-09-19",
+    "event_time": "2:30 PM - 4:30 PM IST",
+    "platform": "On-Campus Lab Discovery + Hybrid Live Stream",
+    "stream_url": "https://youtube.com/live/robotics-iot-discovery-2026",
+    "registration_fee": "Free",
+    "capacity": 300,
+    "registered_count": 210,
+    "is_certified": true,
+    "target_audience": "School & PU College Batches (Grades 10-12), Diploma Students",
+    "brochure_asset": "data/raw/brochures/Robotics_IoT_Outreach.pdf",
+    "prerequisites": "Curiosity about electronics, microcontrollers, and robotics hardware",
+    "learning_outcomes": [
+      "Understanding Real-Time Sensor Telemetry (LiDAR, Ultrasonic, IMU)",
+      "Live Path-Planning Demo on ROS2-enabled Autonomous Wheeled Robots",
+      "Microcontroller Interfacing: ESP32 and ARM Cortex-M architecture overview",
+      "Touring Advanced Institutional R&D Testbeds and Drone Arenas"
+    ],
+    "agenda": [
+      {
+        "time": "2:30 PM - 3:00 PM",
+        "topic": "Foundations of Embedded Systems and Robotics in Industry 4.0"
+      },
+      {
+        "time": "3:00 PM - 3:45 PM",
+        "topic": "Live Hardware Demo: Sensor Integration and Obstacle Avoidance"
+      },
+      {
+        "time": "3:45 PM - 4:15 PM",
+        "topic": "Virtual Lab Walkthrough: 6-Axis Industrial Arms & PCB Assembly"
+      },
+      {
+        "time": "4:15 PM - 4:30 PM",
+        "topic": "Student Project Showcase & Certificate Issue"
+      }
+    ]
+  },
+  {
+    "event_id": "evt-004",
+    "title": "Semiconductor VLSI, RTL Design & FPGA Prototyping Workshop",
+    "track": "Semiconductor & VLSI Engineering",
+    "speaker_name": "Prof. Sudhir Rao",
+    "speaker_designation": "Head, Center of Excellence in Advanced Microelectronics",
+    "speaker_bio": "Former Senior Staff Engineer at Texas Instruments with 18+ years in ASICs and RISC-V digital design.",
+    "event_date": "2026-09-26",
+    "event_time": "10:30 AM - 12:30 PM IST",
+    "platform": "Google Meet / Virtual EDA Cloud Lab",
+    "stream_url": "https://meet.google.com/eda-vlsi-workshop-2026",
+    "registration_fee": "Free",
+    "capacity": 400,
+    "registered_count": 275,
+    "is_certified": true,
+    "target_audience": "Aspiring Electronics & Computer Engineers, Pre-Final Year Undergraduates",
+    "brochure_asset": "data/raw/brochures/VLSI_Semiconductor_Outreach.pdf",
+    "prerequisites": "Basic digital electronics (logic gates, flip-flops)",
+    "learning_outcomes": [
+      "Semiconductor Fabrication Lifecycle: From Silicon Ingot to Packaged IC",
+      "Introduction to Hardware Description Languages (Verilog / SystemVerilog)",
+      "Cadence and Synopsys Toolchain Architecture Overview",
+      "India Semiconductor Mission: Career Opportunities in Chip Design"
+    ],
+    "agenda": [
+      {
+        "time": "10:30 AM - 11:00 AM",
+        "topic": "The Semiconductor Revolution: Microchip Architecture Essentials"
+      },
+      {
+        "time": "11:00 AM - 11:45 AM",
+        "topic": "Synthesizing Digital Logic on Xilinx FPGA Development Boards"
+      },
+      {
+        "time": "11:45 AM - 12:15 PM",
+        "topic": "Industry Hiring Patterns: Intel, Qualcomm, TI, and Synopsys"
+      },
+      {
+        "time": "12:15 PM - 12:30 PM",
+        "topic": "Interactive Quiz and Verification E-Certificate"
+      }
+    ]
+  },
+  {
+    "event_id": "evt-005",
+    "title": "Engineering Stream Selector & Career Aptitude Test",
+    "track": "Aptitude Assessment & Mentorship",
+    "speaker_name": "Prof. Ananya Sharma",
+    "speaker_designation": "Head of Institutional Career Counseling & Mentorship",
+    "speaker_bio": "Certified cognitive behavioral and career transition counselor with over 15 years in student psychology.",
+    "event_date": "2026-10-03",
+    "event_time": "4:00 PM - 5:30 PM IST",
+    "platform": "Webinar Portal + Live Diagnostic Engine",
+    "stream_url": "https://streamselector.pragyanai.com/live",
+    "registration_fee": "Free",
+    "capacity": 1500,
+    "registered_count": 920,
+    "is_certified": true,
+    "target_audience": "10th, 11th & 12th Grade Students, Parents",
+    "brochure_asset": "data/raw/brochures/Stream_Selector_Aptitude.pdf",
+    "prerequisites": "None",
+    "learning_outcomes": [
+      "Objective 15-Minute Psychometric & Cognitive Profiling for Engineering",
+      "Mapping Personal Strengths to Branches: CSE vs AI/DS vs ECE vs Mechanical Automation",
+      "Emerging Interdisciplinary Fields: Quantum Informatics, Bio-Robotics, Cyber-Physical Systems",
+      "Personalized Diagnostic PDF Scorecard Generated for Every Participant"
+    ],
+    "agenda": [
+      {
+        "time": "4:00 PM - 4:20 PM",
+        "topic": "How to Choose an Engineering Stream Based on Aptitude vs Market Hype"
+      },
+      {
+        "time": "4:20 PM - 4:45 PM",
+        "topic": "Live Interactive Stream Selector Aptitude Assessment"
+      },
+      {
+        "time": "4:45 PM - 5:15 PM",
+        "topic": "Deconstructing 4-Year Engineering Curricula Across Branches"
+      },
+      {
+        "time": "5:15 PM - 5:30 PM",
+        "topic": "Instant Scorecard Generation and 1-on-1 Guidance Booking"
+      }
+    ]
+  }
+]
