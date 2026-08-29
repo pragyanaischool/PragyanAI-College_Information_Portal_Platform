@@ -34,17 +34,17 @@ active_role = render_auth_sidebar()
 
 # Route dynamic view based on active persona
 if active_role in [UserRole.GUEST.value, UserRole.ASPIRANT.value]:
-    view_module = importlib.import_module("src.ui.views.1_🎓_Aspirant_Desk")
+    view_module = importlib.import_module("src.ui.views.1_Aspirant_Desk")
     view_module.render_aspirant_view()
 
 elif active_role == UserRole.SCHOOL_PARTNER.value:
-    view_module = importlib.import_module("src.ui.views.2_🏫_School_Partner")
+    view_module = importlib.import_module("src.ui.views.2_School_Partner")
     view_module.render_school_partner_view()
 
 elif active_role == UserRole.RECRUITER.value:
-    view_module = importlib.import_module("src.ui.views.3_💼_Recruiter_Desk")
+    view_module = importlib.import_module("src.ui.views.3_Recruiter_Desk")
     view_module.render_recruiter_view()
 
 elif active_role == UserRole.LEADERSHIP.value:
-    view_module = importlib.import_module("src.ui.views.4_🏛️_Leadership_View")
+    view_module = importlib.import_module("src.ui.views.4_Leadership_View")
     view_module.render_leadership_view()
