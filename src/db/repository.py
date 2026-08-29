@@ -2,8 +2,8 @@
 src/db/repository.py
 
 Data Access and Repository Layer for PragyanAI College Intelligence Hub.
-Provides query interfaces, aggregations, cutoff feasibility calculations,
-lead intake tracking, and talent search methods using SQLAlchemy ORM.
+Provides query interfaces returning plain dictionaries and DataFrames to avoid
+detached instance errors across Streamlit session runs.
 """
 
 from datetime import datetime
@@ -26,57 +26,69 @@ from src.db.models import (
 
 
 class CollegeRepository:
-    """Unified repository for executing analytical, transactional, and search
-
-    queries across all institutional entities.
-    """
+    """Unified repository for analytical and transactional database operations."""
 
     def __init__(self, db: Session):
         self.db = db
 
     # =========================================================================
-    # 1. COLLEGE & INSTITUTIONAL GOVERNANCE QUERIES
+    # 1. COLLEGE QUERIES
     # =========================================================================
 
-    def get_all_colleges(self) -> List[College]:
-        """Retrieves all benchmark colleges ordered by NIRF ranking."""
-        return self.db.query(College).order_by(College.nirf_rank_2025.asc()).all()
-
-    def get_college_by_code(self, college_code: str) -> Optional[College]:
-        """Fetches a single college with full department and faculty relationships loaded."""
-        return (
-            self.db.query(College)
-            .options(
-                joinedload(College.departments),
-                joinedload(College.faculties),
-            )
-            .filter(College.code == college_code.upper())
-            .first()
-        )
-
-    def get_colleges_summary_dataframe(self) -> pd.DataFrame:
-        """Returns a pandas DataFrame of all colleges for ROI analysis and chart rendering."""
-        colleges = self.get_all_colleges()
-        data = []
-        for c in colleges:
-            data.append({
-                "college_code": c.code,
-                "college_name": c.name,
+    def get_all_colleges(self) -> List[Dict[str, Any]]:
+        """Returns all benchmark colleges as standalone dictionaries."""
+        colleges = self.db.query(College).order_by(College.nirf_rank_2025.asc()).all()
+        return [
+            {
+                "code": c.code,
+                "name": c.name,
                 "short_name": c.short_name,
                 "city": c.city,
+                "established_year": c.established_year,
+                "autonomous": c.autonomous,
                 "naac_grade": c.naac_grade,
                 "naac_cgpa": c.naac_cgpa,
+                "nba_accredited_programs": c.nba_accredited_programs,
                 "nirf_rank_2025": c.nirf_rank_2025,
                 "mgmt_fee_cse_lakhs": c.mgmt_fee_cse_lakhs,
                 "govt_fee_cet_lakhs": c.govt_fee_cet_lakhs,
                 "comedk_fee_lakhs": c.comedk_fee_lakhs,
                 "median_ctc_lpa": c.median_ctc_lpa,
                 "highest_ctc_lpa": c.highest_ctc_lpa,
-            })
-        return pd.DataFrame(data)
+            }
+            for c in colleges
+        ]
+
+    def get_college_by_code(self, college_code: str) -> Optional[Dict[str, Any]]:
+        """Fetches a single college record as a dictionary."""
+        c = self.db.query(College).filter(College.code == college_code.upper()).first()
+        if not c:
+            return None
+        return {
+            "code": c.code,
+            "name": c.name,
+            "short_name": c.short_name,
+            "city": c.city,
+            "established_year": c.established_year,
+            "autonomous": c.autonomous,
+            "naac_grade": c.naac_grade,
+            "naac_cgpa": c.naac_cgpa,
+            "nba_accredited_programs": c.nba_accredited_programs,
+            "nirf_rank_2025": c.nirf_rank_2025,
+            "mgmt_fee_cse_lakhs": c.mgmt_fee_cse_lakhs,
+            "govt_fee_cet_lakhs": c.govt_fee_cet_lakhs,
+            "comedk_fee_lakhs": c.comedk_fee_lakhs,
+            "median_ctc_lpa": c.median_ctc_lpa,
+            "highest_ctc_lpa": c.highest_ctc_lpa,
+        }
+
+    def get_colleges_summary_dataframe(self) -> pd.DataFrame:
+        """Returns a pandas DataFrame of benchmark colleges."""
+        colleges = self.get_all_colleges()
+        return pd.DataFrame(colleges)
 
     # =========================================================================
-    # 2. CUTOFFS, ADMISSION FEASIBILITY & PREDICTION
+    # 2. CUTOFFS & ADMISSION FEASIBILITY
     # =========================================================================
 
     def find_eligible_colleges(
@@ -88,7 +100,7 @@ class CollegeRepository:
         year: int = 2026,
         limit: int = 20,
     ) -> pd.DataFrame:
-        """Calculates admission eligibility based on entrance rank, exam, and category."""
+        """Calculates admission eligibility based on entrance rank."""
         query = (
             self.db.query(
                 College.name.label("college_name"),
@@ -142,7 +154,7 @@ class CollegeRepository:
     def get_cutoff_trends(
         self, college_code: str, branch: str, exam: str = "KCET"
     ) -> pd.DataFrame:
-        """Retrieves 3-year historical cutoff trends for a specific branch and college."""
+        """Retrieves historical cutoff trends."""
         cutoffs = (
             self.db.query(Cutoff)
             .filter(
@@ -153,7 +165,6 @@ class CollegeRepository:
             .order_by(Cutoff.year.asc(), Cutoff.category.asc())
             .all()
         )
-
         records = [
             {
                 "year": c.year,
@@ -166,7 +177,7 @@ class CollegeRepository:
         return pd.DataFrame(records)
 
     # =========================================================================
-    # 3. STUDENT TALENT, SKILLS & PLACEMENT SEARCH
+    # 3. STUDENT TALENT & PLACEMENTS
     # =========================================================================
 
     def filter_students(
@@ -177,7 +188,7 @@ class CollegeRepository:
         placement_status: Optional[str] = None,
         limit: int = 100,
     ) -> pd.DataFrame:
-        """Filters synthetic student talent profiles based on recruiter constraints."""
+        """Filters student profiles based on recruiter search parameters."""
         query = self.db.query(Student).filter(Student.cgpa >= min_cgpa)
 
         if branch and branch != "All Branches":
@@ -216,7 +227,7 @@ class CollegeRepository:
         placement_status: Optional[str] = None,
         limit: int = 200,
     ) -> pd.DataFrame:
-        """Enables corporate recruiters to query verified talent by technical competencies."""
+        """Alias helper for skill-based talent querying."""
         return self.filter_students(
             min_cgpa=min_cgpa,
             skill_query=skill_keyword,
@@ -226,7 +237,7 @@ class CollegeRepository:
         )
 
     def get_placement_metrics(self) -> Dict[str, Any]:
-        """Aggregates overall placement and salary benchmarks across 1,000+ students."""
+        """Aggregates placement and salary benchmarks."""
         total_students = self.db.query(func.count(Student.id)).scalar() or 0
         placed_students = (
             self.db.query(func.count(Student.id))
@@ -256,23 +267,32 @@ class CollegeRepository:
         }
 
     # =========================================================================
-    # 4. OUTREACH, WEBINARS & SCHOOL PARTNERSHIP MANAGEMENT
+    # 4. OUTREACH & WEBINARS
     # =========================================================================
 
-    def get_outreach_events(self) -> List[OutreachEvent]:
-        """Fetches upcoming masterclasses, free bootcamps, and admissions webinars."""
-        return (
-            self.db.query(OutreachEvent)
-            .order_by(OutreachEvent.event_date.asc())
-            .all()
-        )
-
-    def get_active_outreach_events(self) -> List[OutreachEvent]:
-        """Alias for get_outreach_events."""
-        return self.get_outreach_events()
+    def get_outreach_events(self) -> List[Dict[str, Any]]:
+        """Returns all scheduled events as dictionaries."""
+        events = self.db.query(OutreachEvent).order_by(OutreachEvent.event_date.asc()).all()
+        return [
+            {
+                "event_id": e.event_id,
+                "title": e.title,
+                "track": e.track,
+                "speaker_name": e.speaker_name,
+                "speaker_designation": e.speaker_designation,
+                "event_date": e.event_date,
+                "event_time": e.event_time,
+                "platform": e.platform,
+                "registration_fee": e.registration_fee,
+                "target_audience": e.target_audience,
+                "learning_outcomes": e.learning_outcomes,
+                "stream_url": getattr(e, "stream_url", None),
+            }
+            for e in events
+        ]
 
     def register_student_for_event(self, registration_data: Dict[str, Any]) -> EventRegistration:
-        """Registers an individual student/aspirant for an outreach event."""
+        """Registers a student for an outreach event."""
         reg = EventRegistration(
             event_id=registration_data["event_id"],
             full_name=registration_data["full_name"],
@@ -286,7 +306,7 @@ class CollegeRepository:
         return reg
 
     def register_partner_school(self, school_data: Dict[str, Any]) -> PartnerSchool:
-        """Enrolls a high school or PU college for bulk bootcamp cohorts."""
+        """Registers a partner school for cohort training."""
         school = PartnerSchool(
             school_name=school_data["school_name"],
             city=school_data["city"],
@@ -305,20 +325,12 @@ class CollegeRepository:
         """Alias for register_partner_school."""
         return self.register_partner_school(partner_data)
 
-    def get_all_partner_schools(self) -> List[PartnerSchool]:
-        """Retrieves all registered partner feeder institutions."""
-        return (
-            self.db.query(PartnerSchool)
-            .order_by(PartnerSchool.created_at.desc())
-            .all()
-        )
-
     # =========================================================================
-    # 5. ADMISSIONS CRM & HIGH-INTENT LEAD PIPELINE
+    # 5. ADMISSIONS CRM LEADS
     # =========================================================================
 
     def create_admission_lead(self, lead_data: Dict[str, Any]) -> AdmissionLead:
-        """Logs a prospective parent/student lead with automatic intent priority score."""
+        """Logs an admission inquiry."""
         lead = AdmissionLead(
             student_name=lead_data["student_name"],
             parent_name=lead_data.get("parent_name", ""),
@@ -340,21 +352,12 @@ class CollegeRepository:
     def get_admission_leads(
         self, college_code: Optional[str] = None, limit: int = 100
     ) -> pd.DataFrame:
-        """Pulls all admission inquiries formatted for the leadership CRM view."""
+        """Fetches admission leads for CRM monitoring."""
         query = self.db.query(AdmissionLead)
         if college_code:
-            query = query.filter(
-                AdmissionLead.target_college_code == college_code.upper()
-            )
+            query = query.filter(AdmissionLead.target_college_code == college_code.upper())
 
-        leads = (
-            query.order_by(
-                AdmissionLead.intent_score.desc(),
-                AdmissionLead.created_at.desc(),
-            )
-            .limit(limit)
-            .all()
-        )
+        leads = query.order_by(AdmissionLead.intent_score.desc(), AdmissionLead.created_at.desc()).limit(limit).all()
 
         records = [
             {
@@ -369,31 +372,8 @@ class CollegeRepository:
                 "entrance_rank": l.entrance_rank or "—",
                 "intent_score": l.intent_score,
                 "status": l.status,
-                "created_at": (
-                    l.created_at.strftime("%Y-%m-%d %H:%M")
-                    if l.created_at
-                    else "—"
-                ),
+                "created_at": l.created_at.strftime("%Y-%m-%d %H:%M") if l.created_at else "—",
             }
             for l in leads
         ]
         return pd.DataFrame(records)
-
-    # =========================================================================
-    # 6. FACULTY RESEARCH & DEPARTMENT METRICS
-    # =========================================================================
-
-    def get_faculty_by_department(
-        self, college_code: str, branch_code: str
-    ) -> List[Faculty]:
-        """Retrieves faculty profiles and Google Scholar citation indices for a branch."""
-        return (
-            self.db.query(Faculty)
-            .join(Department, Faculty.dept_id == Department.id)
-            .filter(
-                Faculty.college_code == college_code.upper(),
-                Department.branch_code == branch_code.upper(),
-            )
-            .order_by(Faculty.citations_count.desc())
-            .all()
-        )
