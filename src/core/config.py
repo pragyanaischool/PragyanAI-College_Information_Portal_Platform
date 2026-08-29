@@ -3,7 +3,7 @@ src/core/config.py
 
 Pydantic-based centralized settings management for PragyanAI College Intelligence Hub.
 Loads environment variables, manages filesystem directories, defines database parameters,
-sets up LLM inference keys, and configures retrieval thresholds.
+sets up LLM inference keys (Groq / OpenAI / Custom Endpoints), and configures retrieval thresholds.
 """
 
 import os
@@ -28,11 +28,11 @@ class Settings(BaseSettings):
     # --- Application Metadata ---
     APP_NAME: str = "PragyanAI College Intelligence Hub"
     APP_VERSION: str = "1.0.0"
-    ENVIRONMENT: str = Field(default="production", env="ENVIRONMENT")
-    DEBUG: bool = Field(default=False, env="DEBUG")
+    ENVIRONMENT: str = Field(default="production", validation_alias="ENVIRONMENT")
+    DEBUG: bool = Field(default=False, validation_alias="DEBUG")
     SECRET_KEY: str = Field(
         default="pragyanai-enterprise-session-secret-key-2026-v1",
-        env="SECRET_KEY",
+        validation_alias="SECRET_KEY",
     )
 
     # --- Filesystem Directory Paths ---
@@ -48,17 +48,20 @@ class Settings(BaseSettings):
     # --- Relational Database Settings (SQLite / PostgreSQL) ---
     DATABASE_URL: str = Field(
         default=f"sqlite:///{ROOT_DIR / 'data' / 'college_portal.db'}",
-        env="DATABASE_URL",
+        validation_alias="DATABASE_URL",
     )
     DB_ECHO_SQL: bool = False
     DB_POOL_SIZE: int = 20
     DB_MAX_OVERFLOW: int = 10
 
-    # --- LLM Provider & Inference Engine (Groq) ---
-    GROQ_API_KEY: str = Field(default="", env="GROQ_API_KEY")
+    # --- LLM Provider & Inference Engine ---
+    GROQ_API_KEY: str = Field(default="", validation_alias="GROQ_API_KEY")
     GROQ_MODEL_NAME: str = Field(
-        default="llama-3.3-70b-versatile", env="GROQ_MODEL_NAME"
+        default="openai/gpt-oss-120b",
+        validation_alias="GROQ_MODEL_NAME",
     )
+    OPENAI_API_KEY: Optional[str] = Field(default=None, validation_alias="OPENAI_API_KEY")
+    OPENAI_BASE_URL: Optional[str] = Field(default=None, validation_alias="OPENAI_BASE_URL")
     LLM_TEMPERATURE: float = 0.1
     LLM_MAX_RETRIES: int = 3
     LLM_TIMEOUT_SECONDS: int = 30
@@ -73,8 +76,8 @@ class Settings(BaseSettings):
     TOP_K_RETRIEVAL: int = 4
 
     # --- Web Search & External Tool API Keys ---
-    TAVILY_API_KEY: Optional[str] = Field(default=None, env="TAVILY_API_KEY")
-    SERPAPI_API_KEY: Optional[str] = Field(default=None, env="SERPAPI_API_KEY")
+    TAVILY_API_KEY: Optional[str] = Field(default=None, validation_alias="TAVILY_API_KEY")
+    SERPAPI_API_KEY: Optional[str] = Field(default=None, validation_alias="SERPAPI_API_KEY")
 
     # --- Admission Intelligence & Scoring Parameters ---
     DEFAULT_ACADEMIC_YEAR: int = 2026
