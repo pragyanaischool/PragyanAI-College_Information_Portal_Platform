@@ -18,7 +18,6 @@ from src.core.config import settings
 # -----------------------------------------------------------------------------
 db_url = settings.DATABASE_URL
 
-# SQLite-specific connection parameters for thread concurrency
 if "sqlite" in db_url:
     engine = create_engine(
         db_url,
@@ -38,7 +37,7 @@ else:
 # -----------------------------------------------------------------------------
 # 2. Session Factory & Declarative Base
 # -----------------------------------------------------------------------------
-# expire_on_commit=False keeps object attributes readable after session closes
+# expire_on_commit=False prevents attributes from expiring after commit/close
 SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
@@ -77,7 +76,7 @@ def get_db_session() -> Generator[Session, None, None]:
 
 def init_db() -> None:
     """Creates all database tables defined across SQLAlchemy models."""
-    import src.db.models  # noqa: F401 (Ensures all models are registered on Base.metadata)
+    import src.db.models  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
 
