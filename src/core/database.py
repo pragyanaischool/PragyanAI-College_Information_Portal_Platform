@@ -1,75 +1,74 @@
 """
 src/core/database.py
 
-SQLAlchemy connection engine, thread-safe session manager, and health check
-utilities for PragyanAI College Intelligence Hub. Supports SQLite and PostgreSQL.
+Relational database engine, declarative Base, and session lifecycle management
+for the PragyanAI College Intelligence Hub.
 """
 
 from contextlib import contextmanager
 from typing import Generator
 from sqlalchemy import create_engine, text
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session, declarative_base, sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker, Session
+from sqlalchemy.pool import StaticPool
 
 from src.core.config import settings
 
+# -----------------------------------------------------------------------------
+# 1. Engine Configuration
+# -----------------------------------------------------------------------------
+db_url = settings.DATABASE_URL
 
-def get_engine() -> Engine:
-    """Initializes and returns the SQLAlchemy Engine based on DATABASE_URL."""
-    db_url = settings.DATABASE_URL
+# SQLite-specific connection parameters for thread concurrency
+if "sqlite" in db_url:
+    engine = create_engine(
+        db_url,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool if ":memory:" in db_url else None,
+        echo=False,
+    )
+else:
+    engine = create_engine(
+        db_url,
+        pool_pre_ping=True,
+        pool_size=10,
+        max_overflow=20,
+        echo=False,
+    )
 
-    if db_url.startswith("sqlite"):
-        return create_engine(
-            db_url,
-            connect_args={"check_same_thread": False},
-            echo=settings.DB_ECHO_SQL,
-        )
-    else:
-        # PostgreSQL enterprise production settings
-        return create_engine(
-            db_url,
-            pool_size=settings.DB_POOL_SIZE,
-            max_overflow=settings.DB_MAX_OVERFLOW,
-            pool_pre_ping=True,
-            echo=settings.DB_ECHO_SQL,
-        )
-
-
-# Singleton database engine and SessionLocal factory
-engine: Engine = get_engine()
-
-SessionLocal: sessionmaker = sessionmaker(
+# -----------------------------------------------------------------------------
+# 2. Session Factory & Declarative Base
+# -----------------------------------------------------------------------------
+# expire_on_commit=False keeps object attributes readable after session closes
+SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
     bind=engine,
+    expire_on_commit=False,
 )
 
-# Declarative Base for all relational ORM models
 Base = declarative_base()
 
 
+# -----------------------------------------------------------------------------
+# 3. Context Managers & Dependency Utilities
+# -----------------------------------------------------------------------------
 @contextmanager
 def get_db() -> Generator[Session, None, None]:
-    """Context manager for thread-safe database sessions with automatic commit/rollback.
-
-    Usage:
-        with get_db() as db:
-            colleges = db.query(College).all()
-    """
+    """Context manager for transactional database operations with auto-rollback."""
     session: Session = SessionLocal()
     try:
         yield session
         session.commit()
-    except Exception as e:
+    except Exception:
         session.rollback()
-        raise e
+        raise
     finally:
         session.close()
 
 
 def get_db_session() -> Generator[Session, None, None]:
-    """Dependency generator for API routes and Streamlit view injection."""
-    db = SessionLocal()
+    """FastAPI/Streamlit generator dependency providing a database session."""
+    db: Session = SessionLocal()
     try:
         yield db
     finally:
@@ -77,14 +76,14 @@ def get_db_session() -> Generator[Session, None, None]:
 
 
 def init_db() -> None:
-    """Initializes all database tables mapped to SQLAlchemy Base metadata."""
-    from src.db.models import Base as AppBase  # Lazy import to prevent circular dependencies
+    """Creates all database tables defined across SQLAlchemy models."""
+    import src.db.models  # noqa: F401 (Ensures all models are registered on Base.metadata)
 
-    AppBase.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
 
 
 def check_db_health() -> bool:
-    """Executes a lightweight query to verify active database connectivity."""
+    """Performs a lightweight query check to verify database connectivity."""
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
