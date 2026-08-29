@@ -3,7 +3,7 @@ src/ui/app.py
 
 Main application entrance and RBAC page router for PragyanAI College Intelligence Hub.
 """
-mport sys
+import sys
 from pathlib import Path
 
 # Resolve repository root (3 levels up from src/ui/app.py)
