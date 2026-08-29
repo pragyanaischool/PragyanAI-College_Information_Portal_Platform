@@ -3,7 +3,14 @@ src/ui/app.py
 
 Main application entrance and RBAC page router for PragyanAI College Intelligence Hub.
 """
+mport sys
+from pathlib import Path
 
+# Resolve repository root (3 levels up from src/ui/app.py)
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+if str(ROOT_DIR) not in sys.path:
+  sys.path.insert(0, str(ROOT_DIR))
+    
 import importlib
 import streamlit as st
 from src.core.config import settings
