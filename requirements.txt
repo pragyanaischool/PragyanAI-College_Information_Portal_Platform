@@ -14,7 +14,7 @@ langchain-groq
 langchain-text-splitters
 langchain-huggingface
 langgraph
-
+langchain_chroma
 # --- LLM Providers & Inference Engines ---
 groq
 
