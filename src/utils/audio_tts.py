@@ -8,7 +8,8 @@ Enables instant voice playback for agent responses in English, Kannada, and Hind
 import io
 import re
 from typing import Optional
-from gTTS import gTTS
+from gtts import gTTS
+#from gTTS import gTTS
 
 
 class AudioTTSEngine:
