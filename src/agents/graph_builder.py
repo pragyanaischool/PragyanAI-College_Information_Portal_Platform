@@ -6,6 +6,7 @@ Implements the Supervisor-Worker state machine with conditional branch routing
 and fallback handling.
 """
 
+import logging
 from typing import Any, Dict, Optional
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_groq import ChatGroq
@@ -16,20 +17,28 @@ from src.agents.compliance_agent import compliance_node
 from src.agents.outreach_agent import outreach_node
 from src.agents.state import AgentActionMedia, AgentState
 from src.agents.supervisor import supervisor_router_node
-from src.agents.tools import execute_college_sql, query_vector_store_tool
+from src.agents.tools import query_vector_store_tool
 from src.core.config import settings
 
+logger = logging.getLogger(__name__)
+
 llm = ChatGroq(
-    model_name=settings.GROQ_MODEL_NAME,
-    groq_api_key=settings.GROQ_API_KEY,
+    model_name=getattr(settings, "GROQ_MODEL_NAME", "llama3-70b-8192"),
+    groq_api_key=getattr(settings, "OPENAI_API_KEY", "your-api-key-here"),
     temperature=0.1,
 )
 
 
 def general_rag_node(state: AgentState) -> Dict[str, Any]:
-    """Fallback node handling general campus explorations and facility tours."""
-    user_query = state["messages"][-1].content
-    docs_context = query_vector_store_tool.invoke({"query_text": user_query, "top_k": 2})
+    """Fallback node handling general campus explorations and facility tours securely."""
+    messages = state.get("messages", [])
+    user_query = messages[-1].content if messages else "Tell me about the campus."
+    
+    docs_context = "General campus documents unavailable."
+    try:
+        docs_context = query_vector_store_tool.invoke({"query_text": user_query, "top_k": 2})
+    except Exception as e:
+        logger.warning(f"Vector retrieval failed in general_rag_node: {e}")
 
     general_prompt = f"""
     You are the Campus Experience Ambassador for PragyanAI College Hub.
@@ -41,7 +50,13 @@ def general_rag_node(state: AgentState) -> Dict[str, Any]:
     [VISITOR QUERY]:
     {user_query}
     """
-    response = llm.invoke([SystemMessage(content=general_prompt)])
+    
+    try:
+        response = llm.invoke([SystemMessage(content=general_prompt)])
+        response_content = response.content
+    except Exception as e:
+        logger.error(f"LLM invocation failed in general_rag_node: {e}")
+        response_content = f"Welcome to PragyanAI College Hub! I am currently unable to process your request due to a network error: {e}"
 
     media: list[AgentActionMedia] = [
         {
@@ -53,7 +68,7 @@ def general_rag_node(state: AgentState) -> Dict[str, Any]:
     ]
 
     return {
-        "messages": [AIMessage(content=response.content)],
+        "messages": [AIMessage(content=response_content)],
         "suggested_media": media,
         "execution_status": "SUCCESS",
     }
@@ -112,7 +127,11 @@ class CollegeAgentWorkflow:
     @classmethod
     def get_graph(cls):
         if cls._compiled_graph is None:
-            cls._compiled_graph = build_college_agent_graph()
+            try:
+                cls._compiled_graph = build_college_agent_graph()
+            except Exception as e:
+                logger.error(f"Failed to build college agent graph: {e}")
+                cls._compiled_graph = None
         return cls._compiled_graph
 
 
@@ -121,7 +140,7 @@ def get_agent_response(
     user_role: str = "Student & Parent Aspirant",
     conversation_history: Optional[list] = None,
 ) -> Dict[str, Any]:
-    """Helper method invoked by the Streamlit frontend to run the graph and return state."""
+    """Helper method invoked by the Streamlit frontend to run the graph securely with fallbacks."""
     graph = CollegeAgentWorkflow.get_graph()
 
     messages = list(conversation_history) if conversation_history else []
@@ -139,13 +158,34 @@ def get_agent_response(
         "execution_status": "INITIALIZED",
     }
 
-    result_state = graph.invoke(initial_state)
-    latest_message = result_state["messages"][-1].content
+    if not graph:
+        # Graceful fallback if graph compilation fails
+        return {
+            "response_text": "I am operating in fallback mode. Please check your system configuration or database connectivity.",
+            "route_taken": "FALLBACK",
+            "lead_intent_score": 1,
+            "suggested_media": [],
+            "sql_query": None,
+        }
 
-    return {
-        "response_text": latest_message,
-        "route_taken": result_state.get("current_route", "GENERAL_RAG"),
-        "lead_intent_score": result_state.get("lead_intent_score", 1),
-        "suggested_media": result_state.get("suggested_media", []),
-        "sql_query": result_state.get("sql_query"),
-    }
+    try:
+        result_state = graph.invoke(initial_state)
+        latest_message = result_state.get("messages", [AIMessage(content="No response generated.")])[-1].content
+
+        return {
+            "response_text": latest_message,
+            "route_taken": result_state.get("current_route", "GENERAL_RAG"),
+            "lead_intent_score": result_state.get("lead_intent_score", 1),
+            "suggested_media": result_state.get("suggested_media", []),
+            "sql_query": result_state.get("sql_query"),
+        }
+    except Exception as e:
+        logger.error(f"Error invoking LangGraph workflow: {e}")
+        return {
+            "response_text": f"An error occurred while routing your query through the agent network: {e}",
+            "route_taken": "ERROR_FALLBACK",
+            "lead_intent_score": 1,
+            "suggested_media": [],
+            "sql_query": None,
+        }
+        
