@@ -33,76 +33,80 @@ class CollegeRepository:
         self.db = db
 
     # =========================================================================
-    # 1. COLLEGE QUERIES
+    # 1. COLLEGE QUERIES (Safe Dictionary Serialization)
     # =========================================================================
 
     def get_all_colleges(self) -> List[Dict[str, Any]]:
         """Returns all benchmark colleges as standalone dictionaries."""
         colleges = self.db.query(College).order_by(College.nirf_rank_2025.asc()).all()
-        return [
-            {
-                "code": c.code,
-                "name": c.name,
-                "short_name": c.short_name,
-                "state": getattr(c, "state", "Karnataka"),
-                "district": getattr(c, "district", "Bengaluru Urban"),
-                "city": c.city,
-                "address": getattr(c, "address", ""),
-                "established_year": c.established_year,
-                "autonomous": c.autonomous,
-                "naac_grade": c.naac_grade,
-                "naac_cgpa": c.naac_cgpa,
-                "nba_accredited_programs": c.nba_accredited_programs,
-                "nirf_rank_2025": c.nirf_rank_2025,
-                "intake_total": c.intake_total,
-                "mgmt_fee_cse_lakhs": c.mgmt_fee_cse_lakhs,
-                "govt_fee_cet_lakhs": c.govt_fee_cet_lakhs,
-                "comedk_fee_lakhs": c.comedk_fee_lakhs,
-                "median_ctc_lpa": c.median_ctc_lpa,
-                "highest_ctc_lpa": c.highest_ctc_lpa,
+        result = []
+        for c in colleges:
+            result.append({
+                "id": str(getattr(c, "id", "")),
+                "code": str(getattr(c, "code", "")),
+                "name": str(getattr(c, "name", "")),
+                "short_name": str(getattr(c, "short_name", "")),
+                "state": getattr(c, "state", "Karnataka") or "Karnataka",
+                "district": getattr(c, "district", "Bengaluru Urban") or "Bengaluru Urban",
+                "city": getattr(c, "city", "Bengaluru") or "Bengaluru",
+                "address": getattr(c, "address", "") or "",
+                "established_year": getattr(c, "established_year", 1960) or 1960,
+                "autonomous": getattr(c, "autonomous", True),
+                "naac_grade": getattr(c, "naac_grade", "A") or "A",
+                "naac_cgpa": float(getattr(c, "naac_cgpa", 3.0) or 3.0),
+                "nba_accredited_programs": int(getattr(c, "nba_accredited_programs", 0) or 0),
+                "nirf_rank_2025": getattr(c, "nirf_rank_2025", 100) or 100,
+                "intake_total": getattr(c, "intake_total", 1200) or 1200,
+                "mgmt_fee_cse_lakhs": float(getattr(c, "mgmt_fee_cse_lakhs", 10.0) or 10.0),
+                "govt_fee_cet_lakhs": float(getattr(c, "govt_fee_cet_lakhs", 1.07) or 1.07),
+                "comedk_fee_lakhs": float(getattr(c, "comedk_fee_lakhs", 2.81) or 2.81),
+                "median_ctc_lpa": float(getattr(c, "median_ctc_lpa", 8.0) or 8.0),
+                "highest_ctc_lpa": float(getattr(c, "highest_ctc_lpa", 25.0) or 25.0),
                 "departments_and_intake": getattr(c, "departments_and_intake", None),
                 "top_recruiters": getattr(c, "top_recruiters", None),
                 "coas_and_centers_of_excellence": getattr(c, "coas_and_centers_of_excellence", None),
-                "website_link": getattr(c, "website_link", ""),
-                "video_tour_url": getattr(c, "video_tour_url", ""),
-                "principal_statement": getattr(c, "principal_statement", ""),
-                "alumni_linkedin_hub": getattr(c, "alumni_linkedin_hub", ""),
-            }
-            for c in colleges
-        ]
+                "website_link": getattr(c, "website_link", "") or "",
+                "video_tour_url": getattr(c, "video_tour_url", "") or "",
+                "principal_statement": getattr(c, "principal_statement", "") or "",
+                "alumni_linkedin_hub": getattr(c, "alumni_linkedin_hub", "") or "",
+            })
+        return result
 
     def get_college_by_code(self, college_code: str) -> Optional[Dict[str, Any]]:
         """Fetches a single college record as a dictionary."""
-        c = self.db.query(College).filter(College.code == college_code.upper()).first()
+        if not college_code:
+            return None
+        c = self.db.query(College).filter(College.code == college_code.upper().strip()).first()
         if not c:
             return None
         return {
-            "code": c.code,
-            "name": c.name,
-            "short_name": c.short_name,
-            "state": getattr(c, "state", "Karnataka"),
-            "district": getattr(c, "district", "Bengaluru Urban"),
-            "city": c.city,
-            "address": getattr(c, "address", ""),
-            "established_year": c.established_year,
-            "autonomous": c.autonomous,
-            "naac_grade": c.naac_grade,
-            "naac_cgpa": c.naac_cgpa,
-            "nba_accredited_programs": c.nba_accredited_programs,
-            "nirf_rank_2025": c.nirf_rank_2025,
-            "intake_total": c.intake_total,
-            "mgmt_fee_cse_lakhs": c.mgmt_fee_cse_lakhs,
-            "govt_fee_cet_lakhs": c.govt_fee_cet_lakhs,
-            "comedk_fee_lakhs": c.comedk_fee_lakhs,
-            "median_ctc_lpa": c.median_ctc_lpa,
-            "highest_ctc_lpa": c.highest_ctc_lpa,
+            "id": str(getattr(c, "id", "")),
+            "code": str(getattr(c, "code", "")),
+            "name": str(getattr(c, "name", "")),
+            "short_name": str(getattr(c, "short_name", "")),
+            "state": getattr(c, "state", "Karnataka") or "Karnataka",
+            "district": getattr(c, "district", "Bengaluru Urban") or "Bengaluru Urban",
+            "city": getattr(c, "city", "Bengaluru") or "Bengaluru",
+            "address": getattr(c, "address", "") or "",
+            "established_year": getattr(c, "established_year", 1960) or 1960,
+            "autonomous": getattr(c, "autonomous", True),
+            "naac_grade": getattr(c, "naac_grade", "A") or "A",
+            "naac_cgpa": float(getattr(c, "naac_cgpa", 3.0) or 3.0),
+            "nba_accredited_programs": int(getattr(c, "nba_accredited_programs", 0) or 0),
+            "nirf_rank_2025": getattr(c, "nirf_rank_2025", 100) or 100,
+            "intake_total": getattr(c, "intake_total", 1200) or 1200,
+            "mgmt_fee_cse_lakhs": float(getattr(c, "mgmt_fee_cse_lakhs", 10.0) or 10.0),
+            "govt_fee_cet_lakhs": float(getattr(c, "govt_fee_cet_lakhs", 1.07) or 1.07),
+            "comedk_fee_lakhs": float(getattr(c, "comedk_fee_lakhs", 2.81) or 2.81),
+            "median_ctc_lpa": float(getattr(c, "median_ctc_lpa", 8.0) or 8.0),
+            "highest_ctc_lpa": float(getattr(c, "highest_ctc_lpa", 25.0) or 25.0),
             "departments_and_intake": getattr(c, "departments_and_intake", None),
             "top_recruiters": getattr(c, "top_recruiters", None),
             "coas_and_centers_of_excellence": getattr(c, "coas_and_centers_of_excellence", None),
-            "website_link": getattr(c, "website_link", ""),
-            "video_tour_url": getattr(c, "video_tour_url", ""),
-            "principal_statement": getattr(c, "principal_statement", ""),
-            "alumni_linkedin_hub": getattr(c, "alumni_linkedin_hub", ""),
+            "website_link": getattr(c, "website_link", "") or "",
+            "video_tour_url": getattr(c, "video_tour_url", "") or "",
+            "principal_statement": getattr(c, "principal_statement", "") or "",
+            "alumni_linkedin_hub": getattr(c, "alumni_linkedin_hub", "") or "",
         }
 
     def get_colleges_summary_dataframe(self) -> pd.DataFrame:
@@ -325,7 +329,8 @@ class CollegeRepository:
             target_exam=registration_data.get("target_exam", "KCET"),
         )
         self.db.add(reg)
-        self.db.flush()
+        self.db.commit()
+        self.db.refresh(reg)
         return reg
 
     def register_partner_school(self, school_data: Dict[str, Any]) -> PartnerSchool:
@@ -341,7 +346,8 @@ class CollegeRepository:
             mou_signed=school_data.get("mou_signed", False),
         )
         self.db.add(school)
-        self.db.flush()
+        self.db.commit()
+        self.db.refresh(school)
         return school
 
     def register_school_partner(self, partner_data: Dict[str, Any]) -> PartnerSchool:
@@ -369,7 +375,8 @@ class CollegeRepository:
             status=lead_data.get("status", "New"),
         )
         self.db.add(lead)
-        self.db.flush()
+        self.db.commit()
+        self.db.refresh(lead)
         return lead
 
     def get_admission_leads(
@@ -408,30 +415,33 @@ class CollegeRepository:
     def save_candidate_profile(self, profile_data: Dict[str, Any]) -> CandidateProfile:
         """Persists candidate multi-test inputs, geographical preferences, and target constraints."""
         profile = CandidateProfile(
-            session_id=profile_data["session_id"],
-            kcet_rank=profile_data.get("kcet_rank", 0),
-            kcet_marks=profile_data.get("kcet_marks", 0.0),
-            comedk_rank=profile_data.get("comedk_rank", 0),
-            comedk_marks=profile_data.get("comedk_marks", 0.0),
-            jee_percentile=profile_data.get("jee_percentile", 0.0),
-            pessat_rank=profile_data.get("pessat_rank", 0),
-            board_pcm_pct=profile_data.get("board_pcm_pct", 0.0),
-            preferred_branch=profile_data.get("preferred_branch", "CSE"),
-            category_quota=profile_data.get("category_quota", "GM"),
-            preferred_city=profile_data.get("preferred_city", "All Cities"),
-            preferred_college_type=profile_data.get("preferred_college_type", "All Types"),
-            seat_quota_pathway=profile_data.get("seat_quota_pathway", "Govt Merit Quota (CET)"),
-            max_annual_fee_lakhs=profile_data.get("max_annual_fee_lakhs", 15.0),
-            min_median_ctc_lpa=profile_data.get("min_median_ctc_lpa", 8.0),
-            target_highest_ctc_lpa=profile_data.get("target_highest_ctc_lpa", 25.0),
-            profile_summary_text=profile_data.get("profile_summary_text", ""),
+            session_id=str(profile_data.get("session_id", "")),
+            kcet_rank=int(profile_data.get("kcet_rank", 0) or 0),
+            kcet_marks=float(profile_data.get("kcet_marks", 0.0) or 0.0),
+            comedk_rank=int(profile_data.get("comedk_rank", 0) or 0),
+            comedk_marks=float(profile_data.get("comedk_marks", 0.0) or 0.0),
+            jee_percentile=float(profile_data.get("jee_percentile", 0.0) or 0.0),
+            pessat_rank=int(profile_data.get("pessat_rank", 0) or 0),
+            board_pcm_pct=float(profile_data.get("board_pcm_pct", 0.0) or 0.0),
+            preferred_branch=str(profile_data.get("preferred_branch", "CSE") or "CSE"),
+            category_quota=str(profile_data.get("category_quota", "GM") or "GM"),
+            preferred_city=str(profile_data.get("preferred_city", "All Cities") or "All Cities"),
+            preferred_college_type=str(profile_data.get("preferred_college_type", "All Types") or "All Types"),
+            seat_quota_pathway=str(profile_data.get("seat_quota_pathway", "Govt Merit Quota (CET)") or "Govt Merit Quota (CET)"),
+            max_annual_fee_lakhs=float(profile_data.get("max_annual_fee_lakhs", 15.0) or 15.0),
+            min_median_ctc_lpa=float(profile_data.get("min_median_ctc_lpa", 8.0) or 8.0),
+            target_highest_ctc_lpa=float(profile_data.get("target_highest_ctc_lpa", 25.0) or 25.0),
+            profile_summary_text=str(profile_data.get("profile_summary_text", "") or ""),
         )
         self.db.add(profile)
-        self.db.flush()
+        self.db.commit()
+        self.db.refresh(profile)
         return profile
 
     def get_latest_candidate_profile(self, session_id: str) -> Optional[Dict[str, Any]]:
         """Retrieves the most recent multi-test profile for a user session."""
+        if not session_id:
+            return None
         prof = (
             self.db.query(CandidateProfile)
             .filter(CandidateProfile.session_id == session_id)
@@ -468,9 +478,9 @@ class CollegeRepository:
 
     def get_faculty_by_department(
         self, college_code: str, branch_code: str
-    ) -> List[Faculty]:
-        """Retrieves faculty profiles and citations count for a branch."""
-        return (
+    ) -> List[Dict[str, Any]]:
+        """Retrieves faculty profiles and citations count for a branch as serialized dicts."""
+        faculties = (
             self.db.query(Faculty)
             .join(Department, Faculty.dept_id == Department.id)
             .filter(
@@ -480,3 +490,19 @@ class CollegeRepository:
             .order_by(Faculty.citations_count.desc())
             .all()
         )
+        return [
+            {
+                "faculty_id": f.faculty_id,
+                "college_code": f.college_code,
+                "full_name": f.full_name,
+                "designation": f.designation,
+                "qualification": f.qualification,
+                "research_areas": f.research_areas,
+                "google_scholar_url": f.google_scholar_url,
+                "linkedin_url": f.linkedin_url,
+                "citations_count": f.citations_count,
+                "h_index": f.h_index,
+                "consulting_projects": f.consulting_projects,
+            }
+            for f in faculties
+        ]
