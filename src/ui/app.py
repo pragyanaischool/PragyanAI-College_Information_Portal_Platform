@@ -109,16 +109,16 @@ def render_welcome_dashboard(active_role: UserRole):
     
     col_card1, col_card2, col_card3 = st.columns(3)
     with col_card1:
-        st.markdown("####  College Master Showcase")
+        st.markdown("#### 1. College Master Showcase")
         st.write("Inspect autonomous infrastructure galleries, R&D centers, and faculty research profiles.")
     with col_card2:
-        st.markdown("####  Comparative Analytics")
+        st.markdown("#### 2. Comparative Analytics")
         st.write("Benchmark KCET/COMEDK cutoff trends and cross-college placement CTC distributions.")
     with col_card3:
-        st.markdown("#### AI RAG Knowledge Agent")
+        st.markdown("#### 3. AI RAG Knowledge Agent")
         st.write("Ask questions and receive instant AI-driven guidance on admissions and career pathways.")
 
-    st.info("💡 **Tip:** Use the sidebar **Role-Based Navigation** menu to jump directly to your authorized portals.")
+    st.info(" **Tip:** Use the sidebar **Role-Based Navigation** menu to jump directly to your authorized portals.")
 
 
 # -----------------------------------------------------------------------------
@@ -251,4 +251,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
