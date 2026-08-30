@@ -162,13 +162,15 @@ def main():
             "6 AI RAG Chat & Profile Advisor",
         ]
     elif active_role == UserRole.RECRUITER:
+        # EXACT Recruiter Menu Order Requested
         view_options = [
             "1 Welcome Dashboard",
-            "2 Recruiter College Deep-Dive",
+            "2 Institutional Analytics & Comparative Reporting",
             "3 Recruiter Placement RAG Advisor",
             "4 College Master Hub & Showcase",
-            "5 Institutional Analytics & Comparative Reporting",
+            "5 Recruiter College Deep-Dive",
         ]
+        
     elif active_role == UserRole.SCHOOL_PARTNER:
         view_options = [
             "1 Welcome Dashboard",
@@ -246,6 +248,14 @@ def main():
         elif "Recruiter Placement RAG Advisor" in view_selection:
             view_module = importlib.import_module("src.ui.views.13_Recruiter_RAG_Advisor")
             view_module.render_recruiter_rag_advisor_view()
+
+        elif "Institutional Analytics & Comparative Reporting" in view_selection or "Institutional Analytics" in view_selection:
+            view_module = importlib.import_module("src.ui.views.5_Analytics_Reporting_View")
+            view_module.render_analytics_reporting_view(active_role)
+
+        elif "College Master Hub" in view_selection:
+            view_module = importlib.import_module("src.ui.views.6_College_Master_Hub")
+            view_module.render_college_master_hub_view()
             
         else:
             view_module = importlib.import_module("src.ui.views.1_Aspirant_Desk")
