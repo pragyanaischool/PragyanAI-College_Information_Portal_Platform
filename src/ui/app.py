@@ -87,7 +87,7 @@ def render_company_logo_header():
 
 
 def render_welcome_dashboard(active_role: UserRole):
-    """Renders a polished welcome dashboard with real-time institutional metrics and college search/glossary."""
+    """Renders a clean, unified welcome dashboard with real-time institutional metrics."""
     st.markdown(f"## 👋 Welcome to PragyanAI Hub, `{active_role.value}`!")
     st.markdown(
         "Empowering educational institutions, aspiring engineering students, school counselors, "
@@ -106,33 +106,22 @@ def render_welcome_dashboard(active_role: UserRole):
         st.metric("Active RAG AI Sessions", "1,840 Daily", "99.4% Accuracy")
 
     st.markdown("---")
-    st.markdown("### 🏛️ Master College Directory & Institutional Types Explained")
-    
-    # Educational Glossary Expander on Main Page
-    with st.expander("📖 Glossary: Understanding University, Autonomous, and Affiliated Colleges"):
-        st.markdown(
-            """
-            - 🏛️ **University (Deemed / State / Private):** 
-              Universities possess statutory authority to design their own curriculums, conduct exams, and award degrees under their own seal.
-            - ⚙️ **Autonomous Colleges:** 
-              Affiliated with a parent university (e.g., VTU) but granted academic freedom to update their syllabi, conduct internal assessments, and introduce cutting-edge tech tracks (AI/GenAI) rapidly.
-            - 🔗 **University Affiliated (Non-Autonomous):** 
-              Colleges that strictly adhere to the rigid curriculum, exam calendars, and evaluation guidelines prescribed by the central affiliating university.
-            """
-        )
+    st.markdown("### 🏛️ Master College Directory & Institutional Overview")
+    st.markdown(
+        "Explore and filter verified engineering institutions across Karnataka. "
+        "Review statutory classifications, department seat intakes, median CTCs, and peak placement offers below."
+    )
 
-    # Embed Live College Directory Search & Filters safely via dynamic importlib
+    # Embedded Live College Directory Search & Filters
     try:
         dir_module = importlib.import_module("src.ui.views.16_College_Search_Directory")
-        st.markdown("### 🔍 Filter Colleges by State, District, City & Type")
         dir_module.render_college_search_directory_view()
     except Exception:
         try:
             dir_module = importlib.import_module("src.ui.views.college_search_directory")
-            st.markdown("### 🔍 Filter Colleges by State, District, City & Type")
             dir_module.render_college_search_directory_view()
-        except Exception:
-            pass
+        except Exception as e:
+            st.warning(f"Directory explorer could not be loaded: {e}")
 
     st.markdown("---")
 
@@ -171,37 +160,37 @@ def main():
     if active_role in [UserRole.ADMIN, UserRole.LEADERSHIP]:
         view_options = [
             "1. Welcome Dashboard",
-            "2 Admin College Master Editor",
-            "3 Dean & Leadership Governance",
-            "4 College Master Hub & Showcase",
-            "5 Institutional Analytics & Reports",
-            "6 Student Inquiries & Engagement",
-            "7 AI RAG Chat & Profile Advisor",
+            "2. Admin College Master Editor",
+            "3. Dean & Leadership Governance",
+            "4. College Master Hub & Showcase",
+            "5. Institutional Analytics & Reports",
+            "6. Student Inquiries & Engagement",
+            "7. AI RAG Chat & Profile Advisor",
         ]
     elif active_role == UserRole.RECRUITER:
         view_options = [
             "1. Welcome Dashboard",
-            "2 Institutional Analytics & Comparative Reporting",
-            "3 Recruiter Placement RAG Advisor",
-            "4 College Master Hub & Showcase",
-            "5 Recruiter College Deep-Dive",
+            "2. Institutional Analytics & Comparative Reporting",
+            "3. Recruiter Placement RAG Advisor",
+            "4. College Master Hub & Showcase",
+            "5. Recruiter College Deep-Dive",
         ]
     elif active_role == UserRole.SCHOOL_PARTNER:
         view_options = [
             "1. Welcome Dashboard",
-            "2 High School & PU Partner Desk",
-            "3 School RAG Analytics & Sentiments",
+            "2. High School & PU Partner Desk",
+            "3. School RAG Analytics & Sentiments",
         ]
-    else:  # Student / Aspirant / Guest (Ordered explicitly per user specification)
+    else:  # Student / Aspirant / Guest (Ordered explicitly per requirements)
         view_options = [
             "1. Welcome Dashboard",
             "2. AI Decision Hub & Aspirant Desk",
+            "3. Aspirant Knowledge Bank",
+            "4. College Master Hub & Showcase",
             "5. College Search & Advanced Directory",
             "6. Student College Deep-Dive",
-            "3. Aspirant Knowledge Bank",
             "7. Student Vision & Ask AI Assistant",
-            "8 Admission RAG Advisory Chat",
-            "4.  College Master Hub & Showcase",
+            "8. Admission RAG Advisory Chat",
         ]
 
     view_selection = st.sidebar.radio(
@@ -215,16 +204,17 @@ def main():
         if "1. Welcome Dashboard" in view_selection:
             render_welcome_dashboard(active_role)
 
-        elif "Admin College Master Editor" in view_selection:
-            try:
-                view_module = importlib.import_module("src.ui.views.17_Admin_College_Editor")
-            except ModuleNotFoundError:
-                view_module = importlib.import_module("src.ui.views.admin_college_editor")
-            view_module.render_admin_college_editor_view()
-
         elif "2. AI Decision Hub & Aspirant Desk" in view_selection:
             view_module = importlib.import_module("src.ui.views.1_Aspirant_Desk")
             view_module.render_aspirant_view()
+
+        elif "3. Aspirant Knowledge Bank" in view_selection:
+            view_module = importlib.import_module("src.ui.views.knowledge_bank")
+            view_module.render_knowledge_bank_view()
+
+        elif "4. College Master Hub & Showcase" in view_selection:
+            view_module = importlib.import_module("src.ui.views.6_College_Master_Hub")
+            view_module.render_college_master_hub_view()
 
         elif "5. College Search & Advanced Directory" in view_selection:
             try:
@@ -240,21 +230,21 @@ def main():
                 view_module = importlib.import_module("src.ui.views.student_college_deep_dive")
             view_module.render_student_college_deep_dive_view()
 
-        elif "3. Aspirant Knowledge Bank" in view_selection:
-            view_module = importlib.import_module("src.ui.views.knowledge_bank")
-            view_module.render_knowledge_bank_view()
-
         elif "7. Student Vision & Ask AI Assistant" in view_selection:
             view_module = importlib.import_module("src.ui.views.student_vision_rag")
             view_module.render_student_vision_rag_view()
 
-        elif "8 Admission RAG Advisory Chat" in view_selection:
+        elif "8. Admission RAG Advisory Chat" in view_selection or "8 Admission RAG Advisory Chat" in view_selection:
             view_module = importlib.import_module("src.ui.views.11_Admission_RAG_Advisor")
             view_module.render_admission_rag_advisor_view()
 
-        elif "4.  College Master Hub & Showcase" in view_selection:
-            view_module = importlib.import_module("src.ui.views.6_College_Master_Hub")
-            view_module.render_college_master_hub_view()
+        # Admin / Recruiter / Other Role Fallbacks
+        elif "Admin College Master Editor" in view_selection:
+            try:
+                view_module = importlib.import_module("src.ui.views.17_Admin_College_Editor")
+            except ModuleNotFoundError:
+                view_module = importlib.import_module("src.ui.views.admin_college_editor")
+            view_module.render_admin_college_editor_view()
 
         elif "High School & PU Partner Desk" in view_selection:
             view_module = importlib.import_module("src.ui.views.2_School_Partner")
@@ -264,7 +254,7 @@ def main():
             view_module = importlib.import_module("src.ui.views.9_School_RAG_Analytics")
             view_module.render_school_rag_analytics_view()
 
-        elif "Institutional Analytics" in view_selection:
+        elif "Institutional Analytics" in view_selection or "Comparative Reporting" in view_selection:
             view_module = importlib.import_module("src.ui.views.5_Analytics_Reporting_View")
             view_module.render_analytics_reporting_view(active_role)
 
@@ -293,8 +283,7 @@ def main():
             view_module.render_recruiter_rag_advisor_view()
 
         else:
-            view_module = importlib.import_module("src.ui.views.1_Aspirant_Desk")
-            view_module.render_aspirant_view()
+            render_welcome_dashboard(active_role)
 
     except Exception as ex:
         st.error(f"Unexpected error rendering view: {ex}")
