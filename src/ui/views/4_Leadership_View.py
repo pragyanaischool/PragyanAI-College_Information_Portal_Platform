@@ -1,145 +1,253 @@
 """
 src/ui/views/4_Leadership_View.py
 
-Dean & Institutional Leadership Dashboard: High-Intent Admission Leads CRM,
-NAAC SSR Attainment, NBA Tier-1 Audit, and Multimodal Document Ingestion Portal.
+Dean & Institutional Leadership Portal for PragyanAI College Intelligence Hub.
+Provides executive visibility across institutional governance, comprehensive college profiles,
+department-wise HOD/CoE intelligence, NAAC/NBA regulatory dossiers, and the Admissions CRM pipeline.
 """
 
-from pathlib import Path
+import pandas as pd
 import streamlit as st
 
-from src.core.config import settings
 from src.core.database import get_db
-from src.db.generate_data_files import generate_raw_documents
-from src.db.repository import CollegeRepository
-from src.ui.components.file_uploader import render_document_uploader
-from src.ui.styles import inject_custom_css, render_metric_card
+from src.core.security import UserRole, require_role
+from src.db.models import AdmissionLead, College, Department, Student
 
 
-def render_leadership_view():
-    """Renders the Dean & Institutional Leadership Desk."""
-    inject_custom_css()
+def render_leadership_view(current_role: UserRole):
+    """Renders the executive institutional governance, college master details, and CRM portal."""
+    try:
+        require_role(current_role, "view_naac_nba_analytics")
+    except PermissionError as e:
+        st.error(f"⛔ {e}")
+        st.info("Please switch your role to **Dean & Institutional Leadership** or **System Administrator** using the sidebar.")
+        return
 
-    st.title(" Institutional Governance & Leadership Intelligence")
+    st.title("🏛️ Institutional Governance & Leadership Intelligence")
     st.markdown(
-        "Executive visibility across admission lead funnels, NAAC Self-Study metrics, "
-        "NBA OBE outcomes, and knowledge base document management."
+        "Executive visibility across institutional profiles, department-wise CoE telemetry, "
+        "NAAC/NBA regulatory frameworks, and high-intent admissions CRM pipelines."
     )
+    st.markdown("---")
 
-    # -------------------------------------------------------------------------
-    # 1. Executive KPIs
-    # -------------------------------------------------------------------------
-    k1, k2, k3, k4 = st.columns(4)
-    with k1:
-        render_metric_card("Total Admissions Footfall", "4,890 Leads", "+22% YoY")
-    with k2:
-        render_metric_card("High-Intent Mgmt Inquiries", "640 Conversions", "+15% YoY")
-    with k3:
-        render_metric_card("NAAC Institutional CGPA", "3.78 / 4.0", "A++ Grade Cycle-4")
-    with k4:
-        render_metric_card("NBA Tier-1 Programs", "14 Accredited", "Valid up to 2028")
+    # =========================================================================
+    # 1. EXECUTIVE METRICS OVERVIEW
+    # =========================================================================
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric(label="Total Admissions Footfall", value="4,890 Leads", delta="+22% YoY")
+    with col2:
+        st.metric(label="High-Intent Mgmt Inquiries", value="640 Conversions", delta="+15% YoY")
+    with col3:
+        st.metric(label="NAAC Institutional CGPA", value="3.78 / 4.0", delta="A++ Grade Cycle-4")
+    with col4:
+        st.metric(label="NBA Tier-1 Programs", value="14 Accredited", delta="Valid up to 2028")
 
-    st.divider()
+    st.markdown("---")
 
-    # -------------------------------------------------------------------------
-    # 2. Main Tab Navigation
-    # -------------------------------------------------------------------------
-    tab_crm, tab_accred, tab_upload = st.tabs([
-        "1. Admissions CRM & Lead Funnel",
-        "2. NAAC & NBA Regulatory Dossiers",
-        "3. Ingest Documents & Update RAG",
+    # =========================================================================
+    # 2. SELECT TAB SECTIONS
+    # =========================================================================
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "🏛️ Overall College Master Hub",
+        "🔬 Department-Wise Intelligence",
+        "📋 Admissions CRM & Lead Funnel",
+        "📊 NAAC & NBA Regulatory Dossiers"
     ])
 
     # -------------------------------------------------------------------------
-    # TAB 1: Admissions CRM & Lead Funnel
+    # TAB 1: OVERALL COLLEGE MASTER HUB (Type, Vision, Growth & Achievements)
     # -------------------------------------------------------------------------
-    with tab_crm:
-        st.subheader("Prospective Parent & Student Admission Leads")
-        st.caption("Live feed of escalated inquiries, entrance ranks, and quota selections.")
+    with tab1:
+        st.subheader("🌐 Comprehensive Institutional Profiles & Governance")
+        
+        with get_db() as db:
+            colleges = db.query(College).all()
+            if not colleges:
+                st.warning("No institutional records found in the database. Run `python -m src.db.seed_runner`.")
+                return
+
+            college_names = [c.name for c in colleges]
+            selected_college_name = st.selectbox("Select Institution for Audit", college_names)
+            college = next((c for c in colleges if c.name == selected_college_name), colleges[0])
+
+        # Render Overview Layout
+        col_a, col_b = st.columns([2, 1])
+        with col_a:
+            st.markdown(f"### {college.name} (`{college.short_name}`)")
+            st.markdown(f"📍 **Location:** {college.address}, {college.city}, {college.state}")
+            st.markdown(f"📅 **Year of Establishment:** {college.established_year} | **Type:** {'Private Autonomous' if college.autonomous else 'Affiliated Non-Autonomous'}")
+            st.markdown(f"🎓 **Total Annual Intake:** {college.intake_total} Seats across UG/PG")
+            
+            st.markdown("#### 🎯 Vision & Mission")
+            st.info(f"**Vision:** {getattr(college, 'vision', 'Leadership in quality technical education and sustainable innovation.')}")
+            st.success(f"**Mission:** {getattr(college, 'mission', 'Deliver outcome-based learning and foster industry partnerships.')}")
+
+        with col_b:
+            st.markdown("#### 🏆 Accreditation & Ranking")
+            st.metric("NAAC Grade & CGPA", f"{college.naac_grade} ({college.naac_cgpa}/4.0)")
+            st.metric("NIRF National Rank (2025)", f"Rank #{college.nirf_rank_2025}")
+            st.metric("NBA Accredited Programs", f"{college.nba_accredited_programs} Programs")
+
+        st.markdown("#### 📈 Growth & Institutional Achievements")
+        st.write(
+            f"Over six decades of academic excellence, **{college.short_name}** has transitioned into a premier "
+            "deep-tech hub. Recognized for pioneering R&D grants from DST and AICTE, the institution maintains an "
+            f"impressive placement median of **₹{college.median_ctc_lpa} LPA** with peak offers reaching **₹{college.highest_ctc_lpa} LPA**."
+        )
+
+        st.markdown("#### 📥 Official Institutional & Admission Brochures")
+        col_pdf1, col_pdf2, col_pdf3 = st.columns(3)
+        with col_pdf1:
+            st.download_button(
+                "📄 Download Admission Flyer",
+                data=b"Sample PDF content for admission flyer",
+                file_name=f"{college.short_name}_Admission_Flyer_2026.pdf",
+                mime="application/pdf",
+                use_container_width=True
+            )
+        with col_pdf2:
+            st.download_button(
+                "📊 Download NAAC SSR Summary",
+                data=b"Sample PDF content for NAAC audit",
+                file_name=f"{college.short_name}_NAAC_SSR_Summary.pdf",
+                mime="application/pdf",
+                use_container_width=True
+            )
+        with col_pdf3:
+            st.download_button(
+                "📈 Download Placement & ROI Report",
+                data=b"Sample PDF content for ROI report",
+                file_name=f"{college.short_name}_Placement_ROI_2026.pdf",
+                mime="application/pdf",
+                use_container_width=True
+            )
+
+    # -------------------------------------------------------------------------
+    # TAB 2: DEPARTMENT-WISE INTELLIGENCE
+    # -------------------------------------------------------------------------
+    with tab2:
+        st.subheader("🔬 Department-Wise HOD, CoE & Talent Telemetry")
+        
+        with get_db() as db:
+            departments = db.query(Department).filter(Department.college_code == college.code).all()
+            if not departments:
+                st.info(f"No specific department records indexed for {college.name}.")
+            else:
+                dept_names = [d.branch_name for d in departments]
+                selected_dept_name = st.selectbox("Select Department / Branch", dept_names)
+                dept = next((d for d in departments if d.branch_name == selected_dept_name), departments[0])
+
+                col_d1, col_d2 = st.columns(2)
+                with col_d1:
+                    st.markdown(f"#### 👨‍🏫 HOD & Leadership: {dept.branch_name}")
+                    st.write(f"**Head of Department:** {dept.hod_name or 'Dr. Department Chair'}")
+                    st.quote(dept.hod_statement or 'Committed to rigorous engineering and computational problem solving.')
+                    st.markdown(f"**Approved Intake:** {dept.intake} Seats | **Research Labs:** {dept.labs_count}")
+                    st.markdown(f"**Sponsored Research Grants:** ₹{dept.funded_grants_lakhs} Lakhs | **Patents Filed:** {dept.patents_filed}")
+
+                with col_d2:
+                    st.markdown("#### ⚡ Centres of Excellence (CoEs)")
+                    coes = dept.centers_of_excellence or ["AI & High Performance Computing Lab", "Cloud Native Systems Testbed"]
+                    for coe in coes:
+                        st.markdown(f"- 🔬 {coe}")
+
+                    st.markdown("#### 🛠️ Skill Programs & Bootcamps")
+                    skills = dept.skill_programs or ["Generative AI & LLM Orchestration", "Advanced Systems Programming"]
+                    for skill in skills:
+                        st.markdown(f"- 💡 {skill}")
+
+                st.markdown("---")
+                col_d3, col_d4 = st.columns(2)
+                with col_d3:
+                    st.markdown("#### 🌟 Notable Alumni Profiles")
+                    alumni = dept.notable_alumni or ["Aarav Sharma (Founder, DeepTech AI)", "Neha Rao (Principal Engineer, Microsoft)"]
+                    for alm in alumni:
+                        st.markdown(f"- 🎓 {alm}")
+
+                with col_d4:
+                    st.markdown("#### 📅 Department Events & Symposiums")
+                    st.markdown("- 🚀 Annual National Coding Hackathon *'InnoHack'*")
+                    st.markdown("- 🤖 AI/ML Inter-College Research Symposium")
+                    st.markdown("- 💼 Industry Expert Tech-Talk & Alumni Fireside Chat")
+
+                st.markdown("#### 🏆 Current Performing Students & Hackathon Winners")
+                top_students = db.query(Student).filter(
+                    Student.college_code == college.code,
+                    Student.branch == dept.branch_code
+                ).order_by(Student.cgpa.desc()).limit(5).all()
+
+                if top_students:
+                    student_data = [{
+                        "USN": s.usn,
+                        "Name": s.full_name,
+                        "CGPA": s.cgpa,
+                        "Hackathons Won": s.hackathons_won,
+                        "Placement Status": s.placement_status,
+                        "Offered CTC (LPA)": s.offered_ctc_lpa,
+                        "Company": s.placed_company
+                    } for s in top_students]
+                    st.dataframe(pd.DataFrame(student_data), use_container_width=True)
+                else:
+                    st.info("No active student records found for this department branch.")
+
+    # -------------------------------------------------------------------------
+    # TAB 3: ADMISSIONS CRM & LEAD FUNNEL
+    # -------------------------------------------------------------------------
+    with tab3:
+        st.subheader("📋 Prospective Parent & Student Admission Leads")
+        st.markdown("Live feed of escalated inquiries, entrance ranks, and quota selections requiring administrative follow-up.")
 
         with get_db() as db:
-            repo = CollegeRepository(db)
-            df_leads = repo.get_admission_leads()
-
-        if not df_leads.empty:
-            st.dataframe(
-                df_leads.rename(
-                    columns={
-                        "student_name": "Student Name",
-                        "parent_name": "Parent Name",
-                        "contact_email": "Email",
-                        "contact_phone": "Phone",
-                        "target_college_code": "College",
-                        "target_branch": "Target Branch",
-                        "admission_type": "Quota",
-                        "entrance_rank": "Rank",
-                        "intent_score": "Intent (1-5)",
-                        "status": "Lead Status",
-                        "created_at": "Logged Date",
-                    }
-                ),
-                use_container_width=True,
-                hide_index=True,
-            )
-        else:
-            st.info("No admission leads recorded yet.")
-
-    # -------------------------------------------------------------------------
-    # TAB 2: Regulatory Compliance & Reports
-    # -------------------------------------------------------------------------
-    with tab_accred:
-        st.subheader("Regulatory Compliance & Criterion-Wise Self-Study Reports")
-        c_n1, c_n2 = st.columns(2)
-
-        # Self-healing check: Ensure files exist before serving download buttons
-        naac_path = settings.REGULATORY_DIR / "NAAC_Self_Study_Summary.pdf"
-        nba_path = settings.REGULATORY_DIR / "NBA_Criteria_Compliance_Report.pdf"
-
-        if not naac_path.exists() or not nba_path.exists():
-            generate_raw_documents()
-
-        with c_n1:
-            st.markdown("####  NAAC Self-Study Report (SSR)")
-            st.markdown(
-                "Criterion 1-7 executive audit covering Curricular Agility, "
-                "Ph.D. faculty ratio, and sponsored R&D grants."
-            )
-            if naac_path.exists():
-                with open(naac_path, "rb") as f_naac:
-                    st.download_button(
-                        " Download NAAC SSR Executive Summary (PDF)",
-                        data=f_naac.read(),
-                        file_name="NAAC_SSR_Summary_2026.pdf",
-                        mime="application/pdf",
-                        use_container_width=True,
-                    )
+            leads = db.query(AdmissionLead).all()
+            if not leads:
+                st.info("No admission leads recorded in the CRM yet.")
             else:
-                st.warning("NAAC SSR document unavailable.")
-
-        with c_n2:
-            st.markdown("####  NBA Tier-1 Compliance Report")
-            st.markdown(
-                "Washington Accord Tier-1 evaluation, PO1-PO12 attainment thresholds, "
-                "and faculty cadre retention audits."
-            )
-            if nba_path.exists():
-                with open(nba_path, "rb") as f_nba:
-                    st.download_button(
-                        " Download NBA OBE Compliance Dossier (PDF)",
-                        data=f_nba.read(),
-                        file_name="NBA_Compliance_Dossier_2026.pdf",
-                        mime="application/pdf",
-                        use_container_width=True,
-                    )
-            else:
-                st.warning("NBA compliance document unavailable.")
+                lead_data = [{
+                    "Student Name": l.student_name,
+                    "Parent Name": l.parent_name,
+                    "Email": l.contact_email,
+                    "Phone": l.contact_phone,
+                    "Target College": l.target_college_code,
+                    "Branch": l.target_branch,
+                    "Admission Type": l.admission_type,
+                    "Rank": l.entrance_rank,
+                    "Intent Score": f"⭐ {l.intent_score} / 5",
+                    "Status": l.status,
+                    "Notes": l.query_notes
+                } for l in leads]
+                st.dataframe(pd.DataFrame(lead_data), use_container_width=True)
 
     # -------------------------------------------------------------------------
-    # TAB 3: Dynamic Document Uploader & RAG Ingestion
+    # TAB 4: NAAC & NBA REGULATORY DOSSIERS
     # -------------------------------------------------------------------------
-    with tab_upload:
-        render_document_uploader()
+    with tab4:
+        st.subheader("📊 NAAC SSR & NBA Outcome-Based Education Compliance")
+        st.markdown(
+            "Review criterion-level scores, Washington Accord PO1-PO12 attainment thresholds, "
+            "and faculty Ph.D. cadre ratios."
+        )
 
+        col_r1, col_r2 = st.columns(2)
+        with col_r1:
+            st.markdown("#### 📋 NAAC Criterion Summary (Cycle 4)")
+            naac_df = pd.DataFrame([
+                {"Criterion": "Criterion 1: Curricular Aspects", "Weightage": 150, "Score Awarded": 142},
+                {"Criterion": "Criterion 2: Teaching-Learning & Evaluation", "Weightage": 200, "Score Awarded": 188},
+                {"Criterion": "Criterion 3: Research, Innovations & Extension", "Weightage": 250, "Score Awarded": 235},
+                {"Criterion": "Criterion 4: Infrastructure & Learning Resources", "Weightage": 100, "Score Awarded": 94},
+                {"Criterion": "Criterion 5: Student Support & Progression", "Weightage": 130, "Score Awarded": 122},
+            ])
+            st.dataframe(naac_df, use_container_width=True)
 
-if __name__ == "__main__":
-    render_leadership_view()
+        with col_r2:
+            st.markdown("#### 🎯 NBA Tier-1 OBE Outcome Attainment")
+            nba_df = pd.DataFrame([
+                {"Program Outcome", "Threshold", "Attainment Level"},
+                {"PO1: Engineering Knowledge", "75%", "88.5%"},
+                {"PO2: Problem Analysis", "75%", "82.0%"},
+                {"PO3: Design / Development", "70%", "79.4%"},
+                {"PO4: Investigations", "70%", "81.2%"},
+                {"PO12: Life-Long Learning", "80%", "91.0%"},
+            ])
+            st.dataframe(nba_df, use_container_width=True)
