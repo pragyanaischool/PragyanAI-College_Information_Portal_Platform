@@ -1,5 +1,5 @@
 """
-src/ui/views/2_School_Partner.py
+src/ui/views/2_🏫_School_Partner.py
 
 School & PU College Partner Desk: Bulk Student Enrollment, Free AI Bootcamps,
 Verifiable E-Certificate Generator, and Live Webinar Schedules.
@@ -144,11 +144,22 @@ def render_school_partner_view():
 
         if events:
             for ev in events:
-                with st.expander(f"📌 {getattr(ev, 'title', 'Masterclass')} ({getattr(ev, 'event_date', 'Upcoming')})", expanded=True):
-                    st.markdown(f"**Track:** {getattr(ev, 'track', 'AI & Systems')} | **Speaker:** {getattr(ev, 'speaker_name', 'Expert')} ({getattr(ev, 'speaker_designation', 'Lead Instructor')})")
-                    st.markdown(f"**Time:** {getattr(ev, 'event_time', '10:00 AM IST')} | **Platform:** {getattr(ev, 'platform', 'Zoom / YouTube Live')} | **Fee:** {getattr(ev, 'registration_fee', 'Free')}")
-                    st.markdown(f"**Target Audience:** {getattr(ev, 'target_audience', 'High School & PU Students')}")
-                    st.markdown(f"**Direct Join URL:** [{getattr(ev, 'platform', 'Join Link')]({getattr(ev, 'brochure_asset', 'https://youtube.com')})")
+                ev_title = getattr(ev, 'title', 'Masterclass')
+                ev_date = getattr(ev, 'event_date', 'Upcoming')
+                ev_track = getattr(ev, 'track', 'AI & Systems')
+                ev_speaker = getattr(ev, 'speaker_name', 'Expert')
+                ev_desig = getattr(ev, 'speaker_designation', 'Lead Instructor')
+                ev_time = getattr(ev, 'event_time', '10:00 AM IST')
+                ev_platform = getattr(ev, 'platform', 'Zoom / YouTube Live')
+                ev_fee = getattr(ev, 'registration_fee', 'Free')
+                ev_audience = getattr(ev, 'target_audience', 'High School & PU Students')
+                ev_url = getattr(ev, 'brochure_asset', 'https://youtube.com')
+
+                with st.expander(f"📌 {ev_title} ({ev_date})", expanded=True):
+                    st.markdown(f"**Track:** {ev_track} | **Speaker:** {ev_speaker} ({ev_desig})")
+                    st.markdown(f"**Time:** {ev_time} | **Platform:** {ev_platform} | **Fee:** {ev_fee}")
+                    st.markdown(f"**Target Audience:** {ev_audience}")
+                    st.markdown(f"**Direct Join URL:** [Join Link]({ev_url})")
         else:
             mock_events = [
                 {
@@ -181,7 +192,7 @@ def render_school_partner_view():
                     st.markdown(f"**Track:** {ev['track']} | **Speaker:** {ev['speaker']} ({ev['designation']})")
                     st.markdown(f"**Time:** {ev['time']} | **Platform:** {ev['platform']} | **Fee:** {ev['fee']}")
                     st.markdown(f"**Target Audience:** {ev['audience']}")
-                    st.markdown(f"**Direct Join URL:** [{ev['platform']}]({ev['url']})")
+                    st.markdown(f"**Direct Join URL:** [Join Link]({ev['url']})")
 
 
 if __name__ == "__main__":
