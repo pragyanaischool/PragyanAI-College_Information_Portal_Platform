@@ -62,20 +62,43 @@ def render_student_engagement_view(current_role: UserRole):
 
         st.dataframe(pd.DataFrame(st.session_state.session_inquiries), use_container_width=True)
 
-        st.markdown("### ⚙️ Action: Respond to Student Inquiry")
-        col_sel1, col_sel2 = st.columns(2)
-        with col_sel1:
-            selected_student = st.selectbox("Select Student Inquiry", [item["Student Name"] for item in st.session_state.session_inquiries], key="eng_q_sel")
-        with col_sel2:
-            new_stat = st.selectbox("Update Status", ["New", "Contacted", "Verified", "Resolved"], key="eng_stat_sel")
+        st.markdown("### ✍️ Submit New Student Question / Inquiry")
+        with st.form("new_student_query_form"):
+            q_name = st.text_input("Your Full Name:")
+            q_email = st.text_input("Email Address / Phone:")
+            q_branch = st.selectbox("Target Engineering Branch", ["Computer Science & Eng", "Artificial Intelligence & DS", "Information Science", "Electronics & Communication", "Mechanical Eng"])
+            q_text = st.text_area("Your Question / Query:")
+            if st.form_submit_button("🚀 Submit Question to Admissions Desk", type="primary"):
+                if q_name.strip() and q_text.strip():
+                    new_id = f"L-{100 + len(st.session_state.session_inquiries) + 1}"
+                    st.session_state.session_inquiries.append({
+                        "Query ID": new_id,
+                        "Student Name": q_name.strip(),
+                        "Contact Email": q_email.strip() or "student@gmail.com",
+                        "Target Branch": q_branch,
+                        "Query / Question": q_text.strip(),
+                        "Status": "New"
+                    })
+                    st.success("🎉 Your question has been successfully transmitted to the admissions counselor desk!")
+                    st.rerun()
+                else:
+                    st.warning("Please provide your name and question details.")
 
-        response_text = st.text_area("Draft Direct Email / SMS Response:")
-        if st.button("📤 Send Official Institutional Response", type="primary"):
-            for item in st.session_state.session_inquiries:
-                if item["Student Name"] == selected_student:
-                    item["Status"] = new_stat
-            st.success(f"Response successfully transmitted to **{selected_student}** and status updated to **{new_stat}**!")
-            st.rerun()
+        st.markdown("### ⚙️ Action: Respond to Student Inquiry")
+        if st.session_state.session_inquiries:
+            col_sel1, col_sel2 = st.columns(2)
+            with col_sel1:
+                selected_student = st.selectbox("Select Student Inquiry", [item["Student Name"] for item in st.session_state.session_inquiries], key="eng_q_sel")
+            with col_sel2:
+                new_stat = st.selectbox("Update Status", ["New", "Contacted", "Verified", "Resolved"], key="eng_stat_sel")
+
+            response_text = st.text_area("Draft Direct Email / SMS Response:")
+            if st.button("📤 Send Official Institutional Response", type="primary"):
+                for item in st.session_state.session_inquiries:
+                    if item["Student Name"] == selected_student:
+                        item["Status"] = new_stat
+                st.success(f"Response successfully transmitted to **{selected_student}** and status updated to **{new_stat}**!")
+                st.rerun()
 
     # -------------------------------------------------------------------------
     # TAB 2: SHOWN INTEREST & QUOTA INTENT
