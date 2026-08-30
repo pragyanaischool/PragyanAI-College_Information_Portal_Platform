@@ -1,5 +1,5 @@
 """
-src/ui/views/6_🏛️_College_Master_Hub.py
+src/ui/views/6_College_Master_Hub.py
 
 College Master Hub & Institutional Showcase Portal:
 Designed for students, recruiters, and college administrators with:
@@ -38,29 +38,39 @@ def render_college_master_hub_view():
             {"code": "E002", "name": "BMS College of Engineering (BMSCE)", "city": "Bengaluru", "nirf_rank_2025": 72, "naac_grade": "A+", "median_ctc_lpa": 11.2, "highest_ctc_lpa": 48.0},
         ]
 
-    college_options = [f"{c['code']} - {c['name']} ({c['city']})" for c in colleges]
+    # Helper function for safe attribute/key access
+    def get_val(item, key, default):
+        if hasattr(item, key):
+            val = getattr(item, key)
+            return val if val is not None else default
+        elif isinstance(item, dict):
+            return item.get(key, default)
+        return default
+
+    college_options = [f"{get_val(c, 'code', 'E000')} - {get_val(c, 'name', 'College')} ({get_val(c, 'city', 'City')})" for c in colleges]
     selected_col_str = st.selectbox("Select Institution to Inspect Master Showcase:", college_options, key="master_hub_college_select")
     selected_code = selected_col_str.split(" - ")[0]
     
-    col_info = next((c for c in colleges if c["code"] == selected_code), colleges[0])
+    col_info = next((c for c in colleges if get_val(c, "code", "") == selected_code), colleges[0])
 
     # Header Metrics Bar
     m1, m2, m3, m4 = st.columns(4)
     with m1:
-        render_metric_card("NIRF 2025 Ranking", f"#{col_info.get('nirf_rank_2025', 50)}", "National Engineering Rank")
+        render_metric_card("NIRF 2025 Ranking", f"#{get_val(col_info, 'nirf_rank_2025', 50)}", "National Engineering Rank")
     with m2:
-        render_metric_card("Median Placement CTC", f"₹{col_info.get('median_ctc_lpa', 10.0)} LPA", "Verified Annual Median")
+        render_metric_card("Median Placement CTC", f"₹{get_val(col_info, 'median_ctc_lpa', 10.0)} LPA", "Verified Annual Median")
     with m3:
-        render_metric_card("Highest Package", f"₹{col_info.get('highest_ctc_lpa', 45.0)} LPA", "Top Multi-National Offer")
+        render_metric_card("Highest Package", f"₹{get_val(col_info, 'highest_ctc_lpa', 45.0)} LPA", "Top Multi-National Offer")
     with m4:
-        render_metric_card("NAAC Accreditation", f"Grade {col_info.get('naac_grade', 'A+')}", "Highest Quality Mark")
+        render_metric_card("NAAC Accreditation", f"Grade {get_val(col_info, 'naac_grade', 'A+')}", "Highest Quality Mark")
 
     st.divider()
 
     # Determine available tabs based on user role
-    user_role = st.session_state.get("user_role", UserRole.STUDENT)
+    user_role = st.session_state.get("user_role", UserRole.ASPIRANT)
+    is_admin = user_role in [UserRole.ADMIN, UserRole.LEADERSHIP]
     
-    if user_role == UserRole.COLLEGE_ADMIN:
+    if is_admin:
         tabs_list = [
             "📈 Placements & Events", 
             "🔬 COEs & Current R&D", 
@@ -85,14 +95,14 @@ def render_college_master_hub_view():
     t_infra = master_tabs[2]
     t_achievers = master_tabs[3]
     t_syllabus = master_tabs[4]
-    t_admin = master_tabs[5] if user_role == UserRole.COLLEGE_ADMIN else None
+    t_admin = master_tabs[5] if is_admin else None
 
     # =========================================================================
     # TAB 1: Placements, Highlights & Events
     # =========================================================================
     with t_overview:
         st.subheader("📈 Placement Highlights & Recent Institutional Events")
-        st.caption(f"Comprehensive placement statistics and recent milestone events for {col_info['name']}.")
+        st.caption(f"Comprehensive placement statistics and recent milestone events for {get_val(col_info, 'name', 'Institution')}.")
 
         p1, p2 = st.columns(2)
         with p1:
@@ -277,25 +287,23 @@ def render_college_master_hub_view():
             )
 
     # =========================================================================
-    # TAB 6: College Admin Update Details (Restricted to College Admin Role)
+    # TAB 6: College Admin Update Details (Restricted to Authorized Admin/Leadership)
     # =========================================================================
     if t_admin is not None:
         with t_admin:
             st.subheader("🛠️ College Admin Portal: Update Institutional Details")
-            st.caption(f"Modify verified placement metrics, R&D breakthroughs, and showcase highlights for {col_info['name']}.")
+            st.caption(f"Modify verified placement metrics, R&D breakthroughs, and showcase highlights for {get_val(col_info, 'name', 'Institution')}.")
 
             with st.form("admin_college_update_form"):
-                up_median = st.number_input("Update Median CTC (₹ LPA):", min_value=3.0, max_value=30.0, value=float(col_info.get('median_ctc_lpa', 12.0)), step=0.5)
-                up_highest = st.number_input("Update Highest Package (₹ LPA):", min_value=10.0, max_value=100.0, value=float(col_info.get('highest_ctc_lpa', 50.0)), step=1.0)
-                up_nirf = st.number_input("Update NIRF Rank:", min_value=1, max_value=500, value=int(col_info.get('nirf_rank_2025', 50)), step=1)
+                up_median = st.number_input("Update Median CTC (₹ LPA):", min_value=3.0, max_value=30.0, value=float(get_val(col_info, 'median_ctc_lpa', 12.0)), step=0.5)
+                up_highest = st.number_input("Update Highest Package (₹ LPA):", min_value=10.0, max_value=100.0, value=float(get_val(col_info, 'highest_ctc_lpa', 50.0)), step=1.0)
+                up_nirf = st.number_input("Update NIRF Rank:", min_value=1, max_value=500, value=int(get_val(col_info, 'nirf_rank_2025', 50)), step=1)
                 
-                up_statement = st.text_area("Principal / Directorate Statement:", value=col_info.get('principal_statement', 'Our mission is experiential education and outcome-based engineering excellence.'))
+                up_statement = st.text_area("Principal / Directorate Statement:", value=get_val(col_info, 'principal_statement', 'Our mission is experiential education and outcome-based engineering excellence.'))
 
                 if st.form_submit_button("💾 Save & Publish Institutional Updates", type="primary"):
                     try:
                         with get_db() as db:
-                            repo = CollegeRepository(db)
-                            # Update logic in database
                             from src.db.models import College
                             db_col = db.query(College).filter(College.code == selected_code).first()
                             if db_col:
@@ -304,7 +312,7 @@ def render_college_master_hub_view():
                                 db_col.nirf_rank_2025 = up_nirf
                                 db_col.principal_statement = up_statement
                                 db.commit()
-                        st.success(f"🎉 Institutional showcase successfully updated for `{col_info['name']}`!")
+                        st.success(f"🎉 Institutional showcase successfully updated for `{get_val(col_info, 'name', 'Institution')}`!")
                     except Exception as e:
                         st.error(f"Error saving updates: {e}")
 
