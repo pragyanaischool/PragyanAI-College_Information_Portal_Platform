@@ -118,7 +118,7 @@ def render_welcome_dashboard(active_role: UserRole):
         st.markdown("#### 🤖 AI RAG Knowledge Agent")
         st.write("Ask questions and receive instant AI-driven guidance on admissions and career pathways.")
 
-    st.info("💡 **Tip:** Use the sidebar **Role-Based Navigation** menu to jump directly to any institutional portal.")
+    st.info("💡 **Tip:** Use the sidebar **Role-Based Navigation** menu to jump directly to your authorized portals.")
 
 
 # -----------------------------------------------------------------------------
@@ -151,7 +151,7 @@ def main():
     st.sidebar.markdown("---")
     st.sidebar.subheader("🧭 Role-Based Navigation")
 
-    # Dynamic Navigation Menu based on Logged-in User Role
+    # STRICT Persona-Based Navigation Menus
     if active_role in [UserRole.ADMIN, UserRole.LEADERSHIP]:
         view_options = [
             "🏠 Welcome Dashboard",
@@ -169,11 +169,11 @@ def main():
             "🤖 AI RAG Chat & Profile Advisor",
         ]
     elif active_role == UserRole.SCHOOL_PARTNER:
+        # Exactly the 3 requested pages for School Partners
         view_options = [
             "🏠 Welcome Dashboard",
             "🏫 High School & PU Partner Desk",
-            "🏛️ College Master Hub & Showcase",
-            "🤖 AI RAG Chat & Profile Advisor",
+            "📊 School RAG Analytics & Sentiments",
         ]
     else:  # Student / Aspirant / Guest
         view_options = [
@@ -198,6 +198,10 @@ def main():
             view_module = importlib.import_module("src.ui.views.2_🏫_School_Partner")
             view_module.render_school_partner_view()
 
+        elif "School RAG Analytics" in view_selection:
+            view_module = importlib.import_module("src.ui.views.9_School_RAG_Analytics")
+            view_module.render_school_rag_analytics_view()
+
         elif "College Master Hub" in view_selection:
             view_module = importlib.import_module("src.ui.views.6_College_Master_Hub")
             view_module.render_college_master_hub_view()
@@ -218,10 +222,6 @@ def main():
             view_module = importlib.import_module("src.ui.views.8_AI_Admissions_RAG_Advisor")
             view_module.render_ai_rag_advisor_view(active_role)
 
-        elif active_role == UserRole.SCHOOL_PARTNER:
-            view_module = importlib.import_module("src.ui.views.2_🏫_School_Partner")
-            view_module.render_school_partner_view()
-
         elif active_role == UserRole.RECRUITER:
             view_module = importlib.import_module("src.ui.views.3_Recruiter_Desk")
             view_module.render_recruiter_view()
@@ -232,7 +232,7 @@ def main():
 
     except ModuleNotFoundError as err:
         st.error(f"Error loading view module for persona '{active_role}': {err}")
-        st.info("Verify that all view files exist in `src/ui/views/` (specifically `2_🏫_School_Partner.py`).")
+        st.info("Verify that all required view files exist in `src/ui/views/` (specifically `2_🏫_School_Partner.py` and `9_School_RAG_Analytics.py`).")
     except Exception as ex:
         st.error(f"Unexpected error rendering view: {ex}")
 
