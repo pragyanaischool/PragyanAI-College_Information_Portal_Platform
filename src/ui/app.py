@@ -168,12 +168,11 @@ def main():
             "7. AI RAG Chat & Profile Advisor",
         ]
     elif active_role == UserRole.RECRUITER:
+        # Enhanced to strictly provide the 3 core pages for Recruiter
         view_options = [
             "1. Welcome Dashboard",
-            "2. Institutional Analytics & Comparative Reporting",
-            "3. Recruiter Placement RAG Advisor",
-            "4. College Master Hub & Showcase",
-            "5. Recruiter College Deep-Dive",
+            "2. Institutional Analytics & Comparative Analytics",
+            "3. College Master Hub & Showcase",
         ]
     elif active_role == UserRole.SCHOOL_PARTNER:
         view_options = [
@@ -181,7 +180,7 @@ def main():
             "2. High School & PU Partner Desk",
             "3. School RAG Analytics & Sentiments",
         ]
-    else:  # Student / Aspirant / Guest (Ordered explicitly per requirements)
+    else:  # Student / Aspirant / Guest
         view_options = [
             "1. Welcome Dashboard",
             "2. AI Decision Hub & Aspirant Desk",
@@ -204,6 +203,17 @@ def main():
         if "1. Welcome Dashboard" in view_selection:
             render_welcome_dashboard(active_role)
 
+        elif "2. Institutional Analytics & Comparative Analytics" in view_selection:
+            try:
+                view_module = importlib.import_module("src.ui.views.3_💼_Recruiter_Desk")
+            except ModuleNotFoundError:
+                view_module = importlib.import_module("src.ui.views.recruiter_desk")
+            view_module.render_recruiter_view()
+
+        elif "3. College Master Hub & Showcase" in view_selection:
+            view_module = importlib.import_module("src.ui.views.6_College_Master_Hub")
+            view_module.render_college_master_hub_view()
+
         elif "2. AI Decision Hub & Aspirant Desk" in view_selection:
             view_module = importlib.import_module("src.ui.views.1_Aspirant_Desk")
             view_module.render_aspirant_view()
@@ -211,10 +221,6 @@ def main():
         elif "3. Aspirant Knowledge Bank" in view_selection:
             view_module = importlib.import_module("src.ui.views.knowledge_bank")
             view_module.render_knowledge_bank_view()
-
-        elif "4. College Master Hub & Showcase" in view_selection:
-            view_module = importlib.import_module("src.ui.views.6_College_Master_Hub")
-            view_module.render_college_master_hub_view()
 
         elif "5. College Search & Advanced Directory" in view_selection:
             try:
@@ -271,16 +277,11 @@ def main():
             view_module.render_ai_rag_advisor_view(active_role)
 
         elif active_role == UserRole.RECRUITER:
-            view_module = importlib.import_module("src.ui.views.3_Recruiter_Desk")
+            try:
+                view_module = importlib.import_module("src.ui.views.3_💼_Recruiter_Desk")
+            except ModuleNotFoundError:
+                view_module = importlib.import_module("src.ui.views.3_Recruiter_Desk")
             view_module.render_recruiter_view()
-        
-        elif "Recruiter College Deep-Dive" in view_selection:
-            view_module = importlib.import_module("src.ui.views.12_Recruiter_Deep_Dive")
-            view_module.render_recruiter_deep_dive_view()
-
-        elif "Recruiter Placement RAG Advisor" in view_selection:
-            view_module = importlib.import_module("src.ui.views.13_Recruiter_RAG_Advisor")
-            view_module.render_recruiter_rag_advisor_view()
 
         else:
             render_welcome_dashboard(active_role)
