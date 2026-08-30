@@ -254,3 +254,19 @@ class CandidateProfile(Base):
     # Ingestion & Metadata
     profile_summary_text = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# Explicit module exports to satisfy __all__ checks
+__all__ = [
+    "Base",
+    "College",
+    "Department",
+    "Faculty",
+    "Cutoff",
+    "Student",
+    "OutreachEvent",
+    "PartnerSchool",
+    "EventRegistration",
+    "AdmissionLead",
+    "CandidateProfile",
+]
