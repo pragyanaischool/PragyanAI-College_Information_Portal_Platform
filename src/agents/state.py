@@ -11,7 +11,7 @@ from typing import Annotated, Any, Dict, List, Optional, Sequence, TypedDict
 from langchain_core.messages import BaseMessage
 
 
-class AgentActionMedia(TypedDict):
+class AgentActionMedia(TypedDict, total=False):
     """Structured media asset returned for multimodal UI rendering."""
     title: str
     media_type: str  # PDF, Video, PPTX, Table, ActionLink
@@ -19,7 +19,7 @@ class AgentActionMedia(TypedDict):
     description: Optional[str]
 
 
-class AgentState(TypedDict):
+class AgentState(TypedDict, total=False):
     """Central state container passed across all LangGraph nodes."""
 
     # Append-only conversation history reducer
@@ -46,3 +46,7 @@ class AgentState(TypedDict):
 
     # Operational status: SUCCESS | ERROR | ESCALATE_TO_CRM
     execution_status: str
+
+    # Telemetry and session context extensions
+    session_id: Optional[str]
+    error_message: Optional[str]
