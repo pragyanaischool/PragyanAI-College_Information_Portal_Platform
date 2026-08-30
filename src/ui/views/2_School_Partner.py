@@ -141,50 +141,125 @@ def render_school_partner_view():
                         st.error(f"Error registering cohort: {e}")
 
     # =========================================================================
-    # PART 2: Verifiable E-Certificate Generator (Multi-Student Support)
+    # PART 2: Verifiable E-Certificate Generator (Bulk XLS/CSV File Uploader + ZIP Download)
     # =========================================================================
     with t_cert:
-        st.subheader("🎓 2. Issue Verifiable E-Certificates for Attended Cohorts")
-        st.caption("Generate official PDF certificates for students who successfully completed PragyanAI bootcamps and workshops.")
+        st.subheader("🎓 2. Bulk Issue Verifiable E-Certificates via Excel / CSV Upload")
+        st.caption("Upload an Excel (.xlsx) or CSV file containing student names to instantly generate and bulk-download multiple customized PDF certificates.")
 
-        with st.form("cert_form"):
+        c_school = st.text_input("Institution Name:", value="National Public School", key="cert_school_input")
+        c_event = st.selectbox(
+            "Masterclass / Bootcamp Attended:",
+            [
+                "Generative AI, RAG & Agentic AI using LangGraph",
+                "Hands-On Robotics, Autonomous Rovers & Micro-Sensors",
+                "Semiconductor VLSI, RTL Design & FPGA Prototyping",
+                "Engineering Stream Selector & Career Aptitude Masterclass",
+            ],
+            key="cert_event_select",
+        )
+
+        uploaded_file = st.file_uploader(
+            "Upload Student List Spreadsheet (Excel .xlsx or CSV format):",
+            type=["xlsx", "csv"],
+            key="student_spreadsheet_uploader",
+            help="Your file should contain a column named 'Name', 'Student Name', or 'Full Name'.",
+        )
+
+        # Alternative manual multi-name text area
+        with st.expander("Or paste student names manually (one per line):", expanded=False):
             student_names_input = st.text_area(
-                "Student Full Names (Enter one name per line for bulk generation) *:",
+                "Student Full Names:",
                 placeholder="Aarav Sharma\nRohan Deshmukh\nPriya Nair",
-                height=100,
+                height=90,
+                key="cert_names_input",
             )
-            c_school = st.text_input("Institution Name:", value="National Public School")
-            c_event = st.selectbox(
-                "Masterclass / Bootcamp Attended:",
-                [
-                    "Generative AI, RAG & Agentic AI using LangGraph",
-                    "Hands-On Robotics, Autonomous Rovers & Micro-Sensors",
-                    "Semiconductor VLSI, RTL Design & FPGA Prototyping",
-                    "Engineering Stream Selector & Career Aptitude Masterclass",
-                ],
-            )
-            if st.form_submit_button("Generate Official Certificates (PDF)", type="primary"):
-                names = [n.strip() for n in student_names_input.split("\n") if n.strip()]
-                if names:
+
+        if st.button("🚀 Generate & Package All Certificates (PDFs)", type="primary", key="btn_gen_certs"):
+            student_names = []
+
+            # 1. Parse Excel / CSV if uploaded
+            if uploaded_file is not None:
+                try:
+                    if uploaded_file.name.endswith(".csv"):
+                        df_students = pd.read_csv(uploaded_file)
+                    else:
+                        df_students = pd.read_excel(uploaded_file)
+
+                    # Identify name column dynamically
+                    name_col = next((col for col in df_students.columns if any(k in col.lower() for k in ["name", "student", "full"])), None)
+                    if name_col:
+                        student_names = df_students[name_col].dropna().astype(str).str.strip().tolist()
+                    else:
+                        # Fallback to the first column if no header matches
+                        student_names = df_students.iloc[:, 0].dropna().astype(str).str.strip().tolist()
+                except Exception as err:
+                    st.error(f"Could not read spreadsheet: {err}")
+
+            # 2. Parse manual text area input if provided
+            if not student_names and student_names_input.strip():
+                student_names = [n.strip() for n in student_names_input.split("\n") if n.strip()]
+
+            if student_names:
+                st.session_state.bulk_cert_names = student_names
+                st.session_state.bulk_cert_school = c_school
+                st.session_state.bulk_cert_event = c_event
+                st.success(f"🎉 Successfully compiled {len(student_names)} verifiable e-certificate(s)!")
+            else:
+                st.warning("Please upload a valid student spreadsheet or enter names manually.")
+
+        # Bulk ZIP Archive Download & Individual Previews
+        if "bulk_cert_names" in st.session_state and st.session_state.bulk_cert_names:
+            st.markdown("---")
+            st.markdown(f"#### 📥 Bulk Package Ready ({len(st.session_state.bulk_cert_names)} Certificates)")
+
+            import zipfile
+            zip_buffer = io.BytesIO()
+            with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+                for s_name in st.session_state.bulk_cert_names:
                     try:
-                        for s_name in names:
-                            cert_bytes = generate_event_certificate(
+                        cert_pdf = generate_event_certificate(
+                            student_name=s_name,
+                            event_title=st.session_state.bulk_cert_event,
+                            institution_name=st.session_state.bulk_cert_school,
+                        )
+                        file_name = f"Certificate_{s_name.replace(' ', '_')}.pdf"
+                        zip_file.writestr(file_name, cert_pdf.getvalue())
+                    except Exception as e:
+                        print(f"Error packing certificate for {s_name}: {e}")
+
+            zip_buffer.seek(0)
+
+            st.download_button(
+                label="📦 Download All Certificates as ZIP Archive (.zip)",
+                data=zip_buffer,
+                file_name=f"PragyanAI_Certificates_{c_school.replace(' ', '_')}.zip",
+                mime="application/zip",
+                use_container_width=True,
+                key="dl_bulk_zip_archive",
+            )
+
+            with st.expander("Preview individual student certificates:", expanded=False):
+                for s_name in st.session_state.bulk_cert_names:
+                    col_dl1, col_dl2 = st.columns([3, 1])
+                    with col_dl1:
+                        st.text(f"📄 {s_name} - {c_event}")
+                    with col_dl2:
+                        try:
+                            single_pdf = generate_event_certificate(
                                 student_name=s_name,
-                                event_title=c_event,
-                                institution_name=c_school,
+                                event_title=st.session_state.bulk_cert_event,
+                                institution_name=st.session_state.bulk_cert_school,
                             )
                             st.download_button(
-                                label=f"📥 Download Certificate for {s_name} (PDF)",
-                                data=cert_bytes.getvalue(),
+                                label="📥 PDF",
+                                data=single_pdf.getvalue(),
                                 file_name=f"Certificate_{s_name.replace(' ', '_')}.pdf",
                                 mime="application/pdf",
-                                key=f"dl_cert_{s_name}",
+                                key=f"single_dl_{s_name}",
                             )
-                        st.success(f"✅ Successfully compiled {len(names)} verifiable e-certificate(s)!")
-                    except Exception as e:
-                        st.error(f"Error generating certificates: {e}")
-                else:
-                    st.warning("Please enter at least one student name.")
+                        except Exception:
+                            pass
 
     # =========================================================================
     # PART 3: Live Webinars & Outreach Events Hub
