@@ -87,8 +87,8 @@ def render_company_logo_header():
 
 
 def render_welcome_dashboard(active_role: UserRole):
-    """Renders a polished welcome dashboard with real-time institutional metrics."""
-    st.markdown(f"##  Welcome to PragyanAI Hub, `{active_role.value}`!")
+    """Renders a polished welcome dashboard with real-time institutional metrics and college search/glossary."""
+    st.markdown(f"## 👋 Welcome to PragyanAI Hub, `{active_role.value}`!")
     st.markdown(
         "Empowering educational institutions, aspiring engineering students, school counselors, "
         "and corporate recruiters with verified telemetry, predictive cutoff analytics, and conversational RAG intelligence."
@@ -106,20 +106,30 @@ def render_welcome_dashboard(active_role: UserRole):
         st.metric("Active RAG AI Sessions", "1,840 Daily", "99.4% Accuracy")
 
     st.markdown("---")
-    st.markdown("###  Quick Access Portals Based on Your Persona")
+    st.markdown("###  Master College Directory & Institutional Types Explained")
     
-    col_card1, col_card2, col_card3 = st.columns(3)
-    with col_card1:
-        st.markdown("#### 1. College Master Showcase")
-        st.write("Inspect autonomous infrastructure galleries, R&D centers, and faculty research profiles.")
-    with col_card2:
-        st.markdown("#### 2. Comparative Analytics")
-        st.write("Benchmark KCET/COMEDK cutoff trends and cross-college placement CTC distributions.")
-    with col_card3:
-        st.markdown("#### 3. AI RAG Knowledge Agent")
-        st.write("Ask questions and receive instant AI-driven guidance on admissions and career pathways.")
+    # Educational Glossary Expander on Main Page
+    with st.expander(" Glossary: Understanding University, Autonomous, and Affiliated Colleges"):
+        st.markdown(
+            """
+            -  **University (Deemed / State / Private):** 
+              Universities possess statutory authority to design their own curriculums, conduct exams, and award degrees under their own seal.
+            -  **Autonomous Colleges:** 
+              Affiliated with a parent university (e.g., VTU) but granted academic freedom to update their syllabi, conduct internal assessments, and introduce cutting-edge tech tracks (AI/GenAI) rapidly.
+            -  **University Affiliated (Non-Autonomous):** 
+              Colleges that strictly adhere to the rigid curriculum, exam calendars, and evaluation guidelines prescribed by the central affiliating university.
+            """
+        )
 
-    st.info("💡 **Tip:** Use the sidebar **Role-Based Navigation** menu to jump directly to your authorized portals.")
+    # Embed Live College Directory Search & Filters directly into Welcome Dashboard for visibility
+    try:
+        from src.ui.views.16_College_Search_Directory import render_college_search_directory_view
+        st.markdown("### 🔍 Filter Colleges by State, District, City & Type")
+        render_college_search_directory_view()
+    except Exception:
+        pass
+
+    st.markdown("---")
 
 
 # -----------------------------------------------------------------------------
@@ -156,12 +166,12 @@ def main():
     if active_role in [UserRole.ADMIN, UserRole.LEADERSHIP]:
         view_options = [
             "1 Welcome Dashboard",
-            "2 Dean & Leadership Governance",
-            "3 College Master Hub & Showcase",
-            "4 Institutional Analytics & Reports",
-            "5 Student Inquiries & Engagement",
-            "6 AI RAG Chat & Profile Advisor",
-            "7 Admin College Master Editor",
+            "2 Admin College Master Editor",
+            "3 Dean & Leadership Governance",
+            "4 College Master Hub & Showcase",
+            "5 Institutional Analytics & Reports",
+            "6 Student Inquiries & Engagement",
+            "7 AI RAG Chat & Profile Advisor",
         ]
     elif active_role == UserRole.RECRUITER:
         view_options = [
@@ -198,6 +208,10 @@ def main():
         if "Welcome Dashboard" in view_selection:
             render_welcome_dashboard(active_role)
 
+        elif "Admin College Master Editor" in view_selection:
+            view_module = importlib.import_module("src.ui.views.17_Admin_College_Editor")
+            view_module.render_admin_college_editor_view()
+
         elif "AI Decision Hub & Aspirant Desk" in view_selection:
             view_module = importlib.import_module("src.ui.views.1_Aspirant_Desk")
             view_module.render_aspirant_view()
@@ -209,10 +223,6 @@ def main():
         elif "Student College Deep-Dive" in view_selection:
             view_module = importlib.import_module("src.ui.views.15_Student_College_Deep_Dive")
             view_module.render_student_college_deep_dive_view()
-
-        elif "Admin College Master Editor" in view_selection:
-            view_module = importlib.import_module("src.ui.views.17_Admin_College_Editor")
-            view_module.render_admin_college_editor_view()
 
         elif "College Deep-Dive" in view_selection:
             view_module = importlib.import_module("src.ui.views.10_College_Deep_Dive_Profile")
@@ -279,3 +289,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
