@@ -72,20 +72,20 @@ def render_college_master_hub_view():
     
     if is_admin:
         tabs_list = [
-            "📈 Placements & Events", 
-            "🔬 COEs & Current R&D", 
-            "🏛️ Campus, Labs & Class Views", 
-            "🌟 Achiever Profiles",
-            "🎓 Syllabus & Skill Programs",
-            "🛠️ Admin: Update Details",
+            "1. Placements & Events", 
+            "2. COEs & Current R&D", 
+            "3. Campus, Labs & Class Views", 
+            "4. Achiever Profiles",
+            "5. Syllabus & Skill Programs",
+            "6. Admin: Update Details",
         ]
     else:
         tabs_list = [
-            "📈 Placements & Events", 
-            "🔬 COEs & Current R&D", 
-            "🏛️ Campus, Labs & Class Views", 
-            "🌟 Achiever Profiles",
-            "🎓 Syllabus & Skill Programs",
+            "1. Placements & Events", 
+            "2. COEs & Current R&D", 
+            "3. Campus, Labs & Class Views", 
+            "4. Achiever Profiles",
+            "5. Syllabus & Skill Programs",
         ]
 
     master_tabs = st.tabs(tabs_list)
@@ -101,7 +101,7 @@ def render_college_master_hub_view():
     # TAB 1: Placements, Highlights & Events
     # =========================================================================
     with t_overview:
-        st.subheader("📈 Placement Highlights & Recent Institutional Events")
+        st.subheader(" Placement Highlights & Recent Institutional Events")
         st.caption(f"Comprehensive placement statistics and recent milestone events for {get_val(col_info, 'name', 'Institution')}.")
 
         p1, p2 = st.columns(2)
@@ -109,7 +109,7 @@ def render_college_master_hub_view():
             st.markdown(
                 """
                 <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem;">
-                    <h4 style="margin:0; color:#1e3a8a;">💼 Key Placement Highlights</h4>
+                    <h4 style="margin:0; color:#1e3a8a;"> Key Placement Highlights</h4>
                     <ul style="color:#334155; font-size:0.92rem; padding-left:1.2rem; margin-top:0.5rem;">
                         <li><b>94.5% Overall Placement Conversion Rate</b> across all engineering branches.</li>
                         <li><b>380+ Elite Recruiters</b> visiting campus annually (Microsoft, Google, Amazon, Qualcomm, Cisco).</li>
@@ -124,7 +124,7 @@ def render_college_master_hub_view():
             st.markdown(
                 """
                 <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem;">
-                    <h4 style="margin:0; color:#1e3a8a;">🎉 Recent Institutional Events</h4>
+                    <h4 style="margin:0; color:#1e3a8a;"> Recent Institutional Events</h4>
                     <ul style="color:#334155; font-size:0.92rem; padding-left:1.2rem; margin-top:0.5rem;">
                         <li><b>Annual National Hackathon 2026:</b> 48-hour hackathon with ₹10 Lakhs prize pool.</li>
                         <li><b>Global AI & Semiconductor Symposium:</b> Keynotes by IEEE fellows and industry leaders.</li>
@@ -165,10 +165,10 @@ def render_college_master_hub_view():
     # TAB 3: 360° Infrastructure Galleries (Campus, Labs, Class, Events)
     # =========================================================================
     with t_infra:
-        st.subheader("🏛️ 360° Campus Infrastructure & Facilities Showcase")
+        st.subheader(" 360° Campus Infrastructure & Facilities Showcase")
         st.caption("Visual walkthrough of world-class campus grounds, high-tech research labs, smart lecture halls, and event auditoriums.")
 
-        infra_tabs = st.tabs(["🌳 Campus View", "💻 Lab View", "🎓 Class View", "🏟️ Events View"])
+        infra_tabs = st.tabs(["1. Campus View", "2. Lab View", "3. Class View", "4. Events View"])
 
         with infra_tabs[0]:
             st.image("https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1000&q=80", caption="Main Academic Block & Central Library Plaza")
@@ -190,13 +190,13 @@ def render_college_master_hub_view():
     # TAB 4: Achiever Profiles (Faculty, Alumni, Students)
     # =========================================================================
     with t_achievers:
-        st.subheader("🌟 Hall of Achievers: Faculty, Alumni & Student Spotlights")
+        st.subheader(" Hall of Achievers: Faculty, Alumni & Student Spotlights")
         st.caption("Highlighting top-tier scholarly impact, global alumni leadership, and elite student developer profiles.")
 
-        ach_tab1, ach_tab2, ach_tab3 = st.tabs(["👨‍🏫 Achiever Faculties", "🎓 Achiever Alumni", "👨‍🎓 Achiever Students"])
+        ach_tab1, ach_tab2, ach_tab3 = st.tabs(["1. Faculty Achievers", "2. Alumni Achievers", "3 Student Achievers "])
 
         with ach_tab1:
-            st.markdown("#### 🔬 Distinguished Faculty Profiles")
+            st.markdown("#### Distinguished Faculty Profiles")
             fac_profiles = [
                 {"name": "Dr. Ramesh Kumar", "desig": "Professor & Head (CSE)", "pub": "85+ IEEE/ACM Publications, 3,200 Citations (h-index: 28)", "scholar": "https://scholar.google.com"},
                 {"name": "Dr. Ananya Rao", "desig": "Professor & Head (AI-ML)", "pub": "Lead Investigator for MeitY Deep-Tech Grant, 18 Patents Filed", "scholar": "https://scholar.google.com"}
@@ -213,7 +213,7 @@ def render_college_master_hub_view():
                 )
 
         with ach_tab2:
-            st.markdown("#### 🌟 Global Alumni Leaders")
+            st.markdown("####  Global Alumni Leaders")
             alumni_profiles = [
                 {"name": "Arjun Sundaram", "role": "Staff AI Engineer @ Google Brain (Class of 2019)", "linkedin": "https://www.linkedin.com"},
                 {"name": "Sneha Kulkarni", "role": "Silicon Design Engineer @ Qualcomm (Class of 2021)", "linkedin": "https://www.linkedin.com"}
@@ -226,7 +226,7 @@ def render_college_master_hub_view():
                     st.link_button("🔗 LinkedIn Profile", a['linkedin'], use_container_width=True)
 
         with ach_tab3:
-            st.markdown("#### 🚀 Student Open-Source & Hackathon Achievers")
+            st.markdown("####  Student Open-Source & Hackathon Achievers")
             student_profiles = [
                 {"name": "Karthik Raja", "batch": "Final Year B.E. (AI-DS)", "bio": "Winner of National AI Hackathon 2025, Contributor to LangChain & LlamaIndex.", "github": "https://github.com", "linkedin": "https://linkedin.com"},
                 {"name": "Pooja Hegde", "batch": "3rd Year B.E. (CSE)", "bio": "Published 2 papers in Springer IEEE on Computer Vision anomaly detection.", "github": "https://github.com", "linkedin": "https://linkedin.com"}
@@ -243,15 +243,15 @@ def render_college_master_hub_view():
                 )
                 b_g, b_l = st.columns(2)
                 with b_g:
-                    st.link_button("🐙 GitHub Profile", s['github'], use_container_width=True)
+                    st.link_button(" GitHub Profile", s['github'], use_container_width=True)
                 with b_l:
-                    st.link_button("🔗 LinkedIn Profile", s['linkedin'], use_container_width=True)
+                    st.link_button(" LinkedIn Profile", s['linkedin'], use_container_width=True)
 
     # =========================================================================
     # TAB 5: Syllabus & Skill Programs
     # =========================================================================
     with t_syllabus:
-        st.subheader("🎓 Industry-Aligned Curriculum, Syllabus & Skill Programs")
+        st.subheader(" Industry-Aligned Curriculum, Syllabus & Skill Programs")
         st.caption("Review autonomous credit frameworks, elective structures, and mandatory multi-year technical skill bootcamps.")
 
         s1, s2 = st.columns(2)
@@ -259,7 +259,7 @@ def render_college_master_hub_view():
             st.markdown(
                 """
                 <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem;">
-                    <h4 style="margin:0; color:#1e3a8a;">📚 Autonomous Syllabus Structure</h4>
+                    <h4 style="margin:0; color:#1e3a8a;"> Autonomous Syllabus Structure</h4>
                     <ul style="color:#334155; font-size:0.92rem; padding-left:1.2rem; margin-top:0.5rem;">
                         <li><b>Bi-Annual Curriculum Revision</b> with 40% active industry participation.</li>
                         <li><b>Minor Specializations</b> in Artificial Intelligence, Quantum Computing, and Electric Vehicles.</li>
@@ -274,7 +274,7 @@ def render_college_master_hub_view():
             st.markdown(
                 """
                 <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem;">
-                    <h4 style="margin:0; color:#1e3a8a;">🛠️ Mandatory Technical Skill Programs</h4>
+                    <h4 style="margin:0; color:#1e3a8a;"> Mandatory Technical Skill Programs</h4>
                     <ul style="color:#334155; font-size:0.92rem; padding-left:1.2rem; margin-top:0.5rem;">
                         <li><b>Year 1:</b> Computational Problem Solving & Python Data Engineering.</li>
                         <li><b>Year 2:</b> Advanced Data Structures, Concurrency & Linux Systems.</li>
@@ -301,7 +301,7 @@ def render_college_master_hub_view():
                 
                 up_statement = st.text_area("Principal / Directorate Statement:", value=get_val(col_info, 'principal_statement', 'Our mission is experiential education and outcome-based engineering excellence.'))
 
-                if st.form_submit_button("💾 Save & Publish Institutional Updates", type="primary"):
+                if st.form_submit_button(" Save & Publish Institutional Updates", type="primary"):
                     try:
                         with get_db() as db:
                             from src.db.models import College
@@ -312,7 +312,7 @@ def render_college_master_hub_view():
                                 db_col.nirf_rank_2025 = up_nirf
                                 db_col.principal_statement = up_statement
                                 db.commit()
-                        st.success(f"🎉 Institutional showcase successfully updated for `{get_val(col_info, 'name', 'Institution')}`!")
+                        st.success(f" Institutional showcase successfully updated for `{get_val(col_info, 'name', 'Institution')}`!")
                     except Exception as e:
                         st.error(f"Error saving updates: {e}")
 
