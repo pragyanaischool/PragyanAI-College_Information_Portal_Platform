@@ -10,7 +10,7 @@ Student and Parent Aspirant Journey:
 - Step 5: 🏛️ Institutional Knowledge Directory, Verified Direct Portals & PDF Downloads
 - Step 6: 🗣️ Voice of Stakeholders (Alumni, Students, Recruiters, Principal & HOD Quotes/Bites)
 - Dedicated Counseling Desk: ✍️ Direct Admission Inquiry & Interactive Multi-Institution Checkbox Grid
-- Multimodal Voice-Enabled College AI Assistant
+- Multimodal Voice-Enabled College AI Assistant & Aspirant Knowledge Bank
 """
 
 from pathlib import Path
@@ -102,7 +102,7 @@ def render_step_progress_indicator(current_step: int = 1):
 
 
 def render_aspirant_view():
-    """Renders the Step-by-Step Aspirant Journey UI with enhanced styling."""
+    """Renders the Step-by-Step Aspirant Journey UI with integrated Knowledge Bank."""
     inject_custom_css()
 
     # Header Title Banner with Premium Visual Framing
@@ -117,10 +117,10 @@ def render_aspirant_view():
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
         ">
             <h1 style="margin: 0 0 0.3rem 0; color: #0f172a; font-weight: 800; font-size: 1.9rem; letter-spacing: -0.025em;">
-                🎓 Student & Parent Decision Gateway
+                🎓 Student & Parent Decision Gateway & Knowledge Bank
             </h1>
             <p style="color: #475569; font-size: 0.98rem; margin: 0; line-height: 1.5;">
-                Follow the 6-step guided roadmap to evaluate cutoffs across competitive exams, explore state and district college directories, benchmark 4-year financial ROI, and secure direct counseling.
+                Follow the 6-step guided roadmap, explore statutory accreditations (NAAC, NBA, NIRF), benchmark 4-year financial ROI, and secure direct counseling.
             </p>
         </div>
         """,
@@ -138,28 +138,29 @@ def render_aspirant_view():
     # High-level Quick Stats Cards
     m1, m2, m3, m4 = st.columns(4)
     with m1:
-        render_metric_card("Benchmark Colleges", "15 Institutions", "All Autonomous Tier-1")
+        render_metric_card("Benchmark Colleges", "25+ Institutions", "All Autonomous Tier-1")
     with m2:
-        render_metric_card("Highest Placement", "62.0 LPA", "Tier-1 Product")
+        render_metric_card("Highest Placement", "67.0 LPA", "Tier-1 Product")
     with m3:
-        render_metric_card("Average Computing CTC", "11.5 LPA", "+1.2 LPA YoY")
+        render_metric_card("Average Computing CTC", "12.4 LPA", "+15% YoY Growth")
     with m4:
         render_metric_card("Median ROI Payback", "16 Months", "Full Investment Recovery")
 
     st.markdown("<div style='margin-bottom: 1.25rem;'></div>", unsafe_allow_html=True)
 
     # -------------------------------------------------------------------------
-    # Tab Workspace Menu (Steps + Geo Directory + Counseling + AI Assistant)
+    # Tab Workspace Menu (Steps + Knowledge Bank + Counseling + AI Assistant)
     # -------------------------------------------------------------------------
-    tab_step1, tab_step2, tab_step3, tab_directory, tab_step4, tab_step5, tab_lead, tab_ai = st.tabs([
-        "📝 Step 1: Score Profiler",
-        "🎯 Step 2: Recommendations & ROI",
-        "⚖️ Step 3: Compare Colleges",
-        "🗺️ Step 4: College Directory Explorer",
-        "🏛️ Step 5: Official Portals & PDFs",
-        "🗣️ Step 6: Stakeholder Voices",
-        "✍️ Direct Counseling & Quota Lock",
-        "🤖 Voice & Multimodal AI Guide",
+    tab_step1, tab_step2, tab_step3, tab_directory, tab_step4, tab_step5, tab_kb, tab_lead, tab_ai = st.tabs([
+        " Step 1: Score Profiler",
+        " Step 2: Recommendations & ROI",
+        " Step 3: Compare Colleges",
+        " Step 4: College Directory Explorer",
+        " Step 5: Official Portals & PDFs",
+        " Step 6: Stakeholder Voices",
+        " Aspirant Knowledge Bank",
+        " Direct Counseling & Quota Lock",
+        " Voice & Multimodal AI Guide",
     ])
 
     # -------------------------------------------------------------------------
@@ -170,7 +171,7 @@ def render_aspirant_view():
 
         render_step1_score_input()
 
-        with st.expander("📄 Or upload your KCET / COMEDK Scorecard PDF for instant auto-read:", expanded=False):
+        with st.expander(" Or upload your KCET / COMEDK Scorecard PDF for instant auto-read:", expanded=False):
             uploaded_scorecard = st.file_uploader(
                 "Upload Scorecard (PDF):",
                 type=["pdf"],
@@ -266,7 +267,7 @@ def render_aspirant_view():
         render_step4_knowledge_directory()
 
         st.markdown("---")
-        st.subheader("📥 Official Brochures, Fee Matrix & Campus Discovery")
+        st.subheader(" Official Brochures, Fee Matrix & Campus Discovery")
         st.caption("Download institutional brochures and view virtual walkthroughs of Centers of Excellence.")
 
         col_docs, col_video = st.columns([1, 1])
@@ -279,11 +280,11 @@ def render_aspirant_view():
             generate_raw_documents()
 
         with col_docs:
-            st.markdown("#### 📄 Verified Institutional Publications")
+            st.markdown("####  Verified Institutional Publications")
             if flyer_path.exists():
                 with open(flyer_path, "rb") as f_brochure:
                     st.download_button(
-                        "📄 Download Management Quota Fee Flyer (PDF)",
+                        " Download Management Quota Fee Flyer (PDF)",
                         data=f_brochure.read(),
                         file_name="Management_Fee_Structure_2026.pdf",
                         mime="application/pdf",
@@ -293,7 +294,7 @@ def render_aspirant_view():
             if roi_path.exists():
                 with open(roi_path, "rb") as f_roi:
                     st.download_button(
-                        "📈 Download 4-Year Salary ROI Report (PDF)",
+                        " Download 4-Year Salary ROI Report (PDF)",
                         data=f_roi.read(),
                         file_name="Placement_ROI_Report_2026.pdf",
                         mime="application/pdf",
@@ -301,12 +302,12 @@ def render_aspirant_view():
                     )
 
             st.info(
-                "💡 **Merit Concession Note:** Top 2,000 KCET & Top 1,500 COMEDK rank holders "
+                " **Merit Concession Note:** Top 2,000 KCET & Top 1,500 COMEDK rank holders "
                 "qualify for up to a 50% tuition scholarship under institutional quotas."
             )
 
         with col_video:
-            st.markdown("#### 🎥 Virtual Labs & Campus Discovery Tour")
+            st.markdown("####  Virtual Labs & Campus Discovery Tour")
             st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
         col_nav_prev4, col_nav_next4 = st.columns([1, 1])
@@ -333,12 +334,68 @@ def render_aspirant_view():
                 st.session_state.aspirant_journey_step = 5
                 st.rerun()
         with col_nav_next5:
-            if st.button("Next: Connect with Admissions ➡️", key="btn_next_to_lead", use_container_width=True):
-                st.session_state.aspirant_journey_step = 6
+            if st.button("Next: Aspirant Knowledge Bank ➡️", key="btn_next_to_kb", use_container_width=True):
                 st.rerun()
 
     # -------------------------------------------------------------------------
-    # TAB 7: Direct Counseling & Admission Lead Form (Interactive Multi-Institution Checkbox Grid)
+    # TAB 7: ASPIRANT KNOWLEDGE BANK (Accreditations, Criteria & Career Strategy)
+    # -------------------------------------------------------------------------
+    with tab_kb:
+        st.subheader(" Aspirant Knowledge Bank & Evaluation Guide")
+        st.markdown(
+            "Equip yourself with insider knowledge on statutory accreditations, multidimensional college evaluation criteria, "
+            "syllabus relevance, and alumni networking strategies."
+        )
+
+        kb_sub1, kb_sub2, kb_sub3 = st.tabs([
+            " 1. Accreditations (NAAC, NBA, NIRF)", 
+            " 2. 7-Pillar College Evaluation", 
+            " 3. Curriculum & Alumni Strategy"
+        ])
+
+        with kb_sub1:
+            st.markdown("### Decoding Statutory Accreditations & National Rankings")
+            st.markdown(
+                """
+                - ** What is NAAC?** 
+                  The National Assessment and Accreditation Council evaluates an entire university's governance, faculty ratios, digital resources, and student welfare systems. Grades range from **A++** down to C. High NAAC grades guarantee institutional stability and recognition for global higher education (MS/M.Tech).
+                - ** What is NBA?** 
+                  Unlike NAAC, the National Board of Accreditation evaluates **specific engineering departments** (e.g., CSE, ECE). **Tier-1 NBA accreditation** falls under the **Washington Accord**, meaning your engineering degree is legally recognized across the US, UK, Australia, and Europe without bridge exams.
+                - ** What is NIRF Ranking?** 
+                  The National Institutional Ranking Framework measures colleges annually across Teaching & Learning Resources, Research & Patents, Graduation Outcomes (Placements & CTC), and Peer Perception.
+                """
+            )
+
+        with kb_sub2:
+            st.markdown("### 7 Crucial Pillars for Selecting an Engineering College")
+            col_k1, col_k2 = st.columns(2)
+            with col_k1:
+                st.markdown("#### 1. Placement ROI & CTC Stacks")
+                st.write("Analyze median CTC packages, peak offers, and the percentage of students placed in core product companies vs mass recruiters.")
+                st.markdown("#### 2. Skill Programs & Certification Tracks")
+                st.write("Check if the college integrates modern tech stacks (GenAI, Cloud, Full-Stack, VLSI) directly into elective curriculums.")
+                st.markdown("#### 3. Key Faculty Profiles")
+                st.write("Examine faculty qualifications (Ph.D. holders from IITs/IISc), Google Scholar citations, and active consulting grants.")
+            with col_k2:
+                st.markdown("#### 4. Institutional Vision & Governance")
+                st.write("Review leadership statements, management stability, academic autonomy, and student mentorship ratios.")
+                st.markdown("#### 5. Infrastructure & R&D Labs")
+                st.write("Inspect high-compute GPU clusters, IoT testbeds, and maker spaces supporting student startups.")
+                st.markdown("#### 6. Centers of Excellence (COEs)")
+                st.write("Verify partnerships with global tech giants (NVIDIA, Intel, AWS, Cisco) sponsoring specialized training labs.")
+
+        with kb_sub3:
+            st.markdown("### Syllabus Relevance & Alumni Network Effect")
+            st.markdown(
+                """
+                - ** Critical Importance of Autonomous Syllabus:** Static curriculums leave graduates unemployable. Autonomous institutions update their coursework every 2-3 years to include Artificial Intelligence, Agentic workflows, and Cloud Native development.
+                - ** Practical Skill Building:** While a high CGPA (>8.5) opens doors, actual product company hiring depends heavily on active GitHub repositories, hackathon participation, and problem-solving speed under pressure.
+                - ** Alumni Current Status:** Strong colleges boast alumni holding senior engineering and leadership roles at Google, Microsoft, NVIDIA, and high-growth unicorns. Connect early with seniors on LinkedIn to navigate internship recruitment timelines.
+                """
+            )
+
+    # -------------------------------------------------------------------------
+    # TAB 8: Direct Counseling & Admission Lead Form
     # -------------------------------------------------------------------------
     with tab_lead:
         st.markdown(
@@ -369,7 +426,7 @@ def render_aspirant_view():
             st.markdown(
                 """
                 <div style="font-weight: 700; color: #0f172a; margin-top: 0.75rem; margin-bottom: 0.35rem; font-size: 0.95rem;">
-                    🏛️ Target Institution(s) — Select all colleges you wish to apply to:
+                     Target Institution(s) — Select all colleges you wish to apply to:
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -407,7 +464,7 @@ def render_aspirant_view():
             )
 
             submit_inquiry = st.form_submit_button(
-                "🚀 Submit Inquiry & Request Direct Callback",
+                " Submit Inquiry & Request Direct Callback",
                 type="primary",
                 use_container_width=True,
             )
@@ -432,12 +489,12 @@ def render_aspirant_view():
                                     "intent_score": 5 if "Management" in adm_type else 3,
                                     "query_notes": notes,
                                 })
-                        st.success(f"🎉 Admission inquiries for {len(selected_institutions)} selected institution(s) have been logged! The Admissions Directorate will contact you shortly.")
+                        st.success(f" Admission inquiries for {len(selected_institutions)} selected institution(s) have been logged! The Admissions Directorate will contact you shortly.")
                     except Exception as err:
                         st.error(f"Error submitting inquiry: {err}")
 
     # -------------------------------------------------------------------------
-    # TAB 8: Conversational Voice/Text AI Assistant
+    # TAB 9: Conversational Voice/Text AI Assistant
     # -------------------------------------------------------------------------
     with tab_ai:
         render_multimodal_chat()
