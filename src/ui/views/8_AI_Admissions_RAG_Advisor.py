@@ -23,7 +23,7 @@ def render_ai_rag_advisor_view(current_role: UserRole):
     # =========================================================================
     # SECTION 1: UNIVERSAL RAG CHAT AGENT
     # =========================================================================
-    st.subheader("💬 Interactive RAG Knowledge Chat Agent")
+    st.subheader(" Interactive RAG Knowledge Chat Agent")
     st.caption("Example queries: *'Which colleges in Bengaluru have median CTC > 12 LPA for CSE?'* or *'What are the KCET cutoff ranks for AI-DS?'*")
 
     if "rag_chat_history" not in st.session_state:
@@ -83,23 +83,23 @@ def render_ai_rag_advisor_view(current_role: UserRole):
     # =========================================================================
     # SECTION 2: PROFILE OPTIMIZATION & STUDENT ATTRACTION ADVISOR
     # =========================================================================
-    st.subheader("📊 Institutional Profile Optimization & Student Attraction Insights")
+    st.subheader(" Institutional Profile Optimization & Student Attraction Insights")
     st.markdown("Discover what prospective applicants look for and how to optimize your college profile to maximize conversion rates.")
 
     col_a, col_b = st.columns(2)
     with col_a:
-        st.markdown("#### 📈 Student Search Intent Telemetry")
+        st.markdown("####  Student Search Intent Telemetry")
         st.markdown("- **94%** search for verified median CTC and recruiter brand stacks.")
         st.markdown("- **88%** query details regarding AI/ML & Autonomous Systems Labs.")
         st.markdown("- **81%** review faculty publication metrics and research grant volumes.")
     with col_b:
-        st.markdown("#### ⚠️ Profile Gaps Identified by RAG Engine")
+        st.markdown("####  Profile Gaps Identified by RAG Engine")
         st.markdown("- *Missing recent student startup incubation success metrics.*")
         st.markdown("- *Detailed hostel fee structure and safety accreditations not prominently visible.*")
         st.markdown("- *Alumni GitHub repository links are unindexed.*")
 
     st.markdown("---")
-    st.subheader("💡 AI Recommendations: What to Add to Your Profile to Attract More Students")
+    st.subheader(" AI Recommendations: What to Add to Your Profile to Attract More Students")
 
     st.success(
         "**Recommendation 1: Highlight Sponsored R&D Grants & Innovation Funds**\n\n"
@@ -117,7 +117,7 @@ def render_ai_rag_advisor_view(current_role: UserRole):
         "Adding an interactive fee-to-salary ROI payback calculator on your institutional page helps families calculate return periods (average 14 months), driving higher management quota conversions."
     )
 
-    st.markdown("### 🚀 One-Click AI Profile Enhancement")
+    st.markdown("###  One-Click AI Profile Enhancement")
     if st.button("✨ Apply Recommended RAG Enhancements to College Profile", type="primary"):
         st.success("Successfully injected AI-optimized RAG metadata, scholarship calculators, and recruitment highlights into institutional profile storage!")
 
