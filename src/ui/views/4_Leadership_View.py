@@ -23,7 +23,7 @@ def render_leadership_view(current_role: UserRole):
         st.info("Please switch your role to **Dean & Institutional Leadership** or **System Administrator** using the sidebar.")
         return
 
-    st.title("🏛️ Institutional Governance & Leadership Intelligence")
+    st.title(" Institutional Governance & Leadership Intelligence")
     st.markdown(
         "Executive visibility across institutional profiles, department-wise CoE telemetry, "
         "NAAC/NBA regulatory frameworks, and high-intent admissions CRM pipelines."
@@ -49,17 +49,17 @@ def render_leadership_view(current_role: UserRole):
     # 2. SELECT TAB SECTIONS
     # =========================================================================
     tab1, tab2, tab3, tab4 = st.tabs([
-        "🏛️ Overall College Master Hub",
-        "🔬 Department-Wise Intelligence",
-        "📋 Admissions CRM & Lead Funnel",
-        "📊 NAAC & NBA Regulatory Dossiers"
+        "1. Overall College Master Hub",
+        "2. Department-Wise Intelligence",
+        "3. Admissions CRM & Lead Funnel",
+        "4. NAAC & NBA Regulatory Dossiers"
     ])
 
     # -------------------------------------------------------------------------
     # TAB 1: OVERALL COLLEGE MASTER HUB
     # -------------------------------------------------------------------------
     with tab1:
-        st.subheader("🌐 Comprehensive Institutional Profiles & Governance")
+        st.subheader(" Comprehensive Institutional Profiles & Governance")
         
         with get_db() as db:
             colleges = db.query(College).all()
@@ -74,32 +74,32 @@ def render_leadership_view(current_role: UserRole):
         col_a, col_b = st.columns([2, 1])
         with col_a:
             st.markdown(f"### {college.name} (`{college.short_name}`)")
-            st.markdown(f"📍 **Location:** {college.address}, {college.city}, {college.state}")
-            st.markdown(f"📅 **Year of Establishment:** {college.established_year} | **Type:** {'Private Autonomous' if college.autonomous else 'Affiliated Non-Autonomous'}")
-            st.markdown(f"🎓 **Total Annual Intake:** {college.intake_total} Seats across UG/PG")
+            st.markdown(f" **Location:** {college.address}, {college.city}, {college.state}")
+            st.markdown(f" **Year of Establishment:** {college.established_year} | **Type:** {'Private Autonomous' if college.autonomous else 'Affiliated Non-Autonomous'}")
+            st.markdown(f" **Total Annual Intake:** {college.intake_total} Seats across UG/PG")
             
-            st.markdown("#### 🎯 Vision & Mission")
+            st.markdown("####  Vision & Mission")
             st.info(f"**Vision:** {getattr(college, 'vision', 'Leadership in quality technical education and sustainable innovation.')}")
             st.success(f"**Mission:** {getattr(college, 'mission', 'Deliver outcome-based learning and foster industry partnerships.')}")
 
         with col_b:
-            st.markdown("#### 🏆 Accreditation & Ranking")
+            st.markdown("####  Accreditation & Ranking")
             st.metric("NAAC Grade & CGPA", f"{college.naac_grade} ({college.naac_cgpa}/4.0)")
             st.metric("NIRF National Rank (2025)", f"Rank #{college.nirf_rank_2025}")
             st.metric("NBA Accredited Programs", f"{college.nba_accredited_programs} Programs")
 
-        st.markdown("#### 📈 Growth & Institutional Achievements")
+        st.markdown("####  Growth & Institutional Achievements")
         st.write(
             f"Over decades of academic excellence, **{college.short_name}** has transitioned into a premier "
             "deep-tech hub. Recognized for pioneering R&D grants from DST and AICTE, the institution maintains an "
             f"impressive placement median of **₹{college.median_ctc_lpa} LPA** with peak offers reaching **₹{college.highest_ctc_lpa} LPA**."
         )
 
-        st.markdown("#### 📥 Official Institutional & Admission Brochures")
+        st.markdown("####  Official Institutional & Admission Brochures")
         col_pdf1, col_pdf2, col_pdf3 = st.columns(3)
         with col_pdf1:
             st.download_button(
-                "📄 Download Admission Flyer",
+                " Download Admission Flyer",
                 data=b"Sample PDF content for admission flyer",
                 file_name=f"{college.short_name}_Admission_Flyer_2026.pdf",
                 mime="application/pdf",
@@ -107,7 +107,7 @@ def render_leadership_view(current_role: UserRole):
             )
         with col_pdf2:
             st.download_button(
-                "📊 Download NAAC SSR Summary",
+                " Download NAAC SSR Summary",
                 data=b"Sample PDF content for NAAC audit",
                 file_name=f"{college.short_name}_NAAC_SSR_Summary.pdf",
                 mime="application/pdf",
@@ -115,7 +115,7 @@ def render_leadership_view(current_role: UserRole):
             )
         with col_pdf3:
             st.download_button(
-                "📈 Download Placement & ROI Report",
+                " Download Placement & ROI Report",
                 data=b"Sample PDF content for ROI report",
                 file_name=f"{college.short_name}_Placement_ROI_2026.pdf",
                 mime="application/pdf",
@@ -126,7 +126,7 @@ def render_leadership_view(current_role: UserRole):
     # TAB 2: DEPARTMENT-WISE INTELLIGENCE
     # -------------------------------------------------------------------------
     with tab2:
-        st.subheader("🔬 Department-Wise HOD, CoE & Talent Telemetry")
+        st.subheader(" Department-Wise HOD, CoE & Talent Telemetry")
         
         with get_db() as db:
             departments = db.query(Department).filter(Department.college_code == college.code).all()
@@ -139,19 +139,19 @@ def render_leadership_view(current_role: UserRole):
 
                 col_d1, col_d2 = st.columns(2)
                 with col_d1:
-                    st.markdown(f"#### 👨‍🏫 HOD & Leadership: {dept.branch_name}")
+                    st.markdown(f"####  HOD & Leadership: {dept.branch_name}")
                     st.write(f"**Head of Department:** {dept.hod_name or 'Dr. Department Chair'}")
                     st.info(dept.hod_statement or 'Committed to rigorous engineering and computational problem solving.')
                     st.markdown(f"**Approved Intake:** {dept.intake} Seats | **Research Labs:** {dept.labs_count}")
                     st.markdown(f"**Sponsored Research Grants:** ₹{dept.funded_grants_lakhs} Lakhs | **Patents Filed:** {dept.patents_filed}")
 
                 with col_d2:
-                    st.markdown("#### ⚡ Centres of Excellence (CoEs)")
+                    st.markdown("#### Centres of Excellence (CoEs)")
                     coes = dept.centers_of_excellence or ["AI & High Performance Computing Lab", "Cloud Native Systems Testbed"]
                     for coe in coes:
-                        st.markdown(f"- 🔬 {coe}")
+                        st.markdown(f"- {coe}")
 
-                    st.markdown("#### 🛠️ Skill Programs & Bootcamps")
+                    st.markdown("####  Skill Programs & Bootcamps")
                     skills = dept.skill_programs or ["Generative AI & LLM Orchestration", "Advanced Systems Programming"]
                     for skill in skills:
                         st.markdown(f"- 💡 {skill}")
@@ -159,18 +159,18 @@ def render_leadership_view(current_role: UserRole):
                 st.markdown("---")
                 col_d3, col_d4 = st.columns(2)
                 with col_d3:
-                    st.markdown("#### 🌟 Notable Alumni Profiles")
+                    st.markdown("####  Notable Alumni Profiles")
                     alumni = dept.notable_alumni or ["Aarav Sharma (Founder, DeepTech AI)", "Neha Rao (Principal Engineer, Microsoft)"]
                     for alm in alumni:
                         st.markdown(f"- 🎓 {alm}")
 
                 with col_d4:
-                    st.markdown("#### 📅 Department Events & Symposiums")
-                    st.markdown("- 🚀 Annual National Coding Hackathon *'InnoHack'*")
-                    st.markdown("- 🤖 AI/ML Inter-College Research Symposium")
-                    st.markdown("- 💼 Industry Expert Tech-Talk & Alumni Fireside Chat")
+                    st.markdown("#### 1. Department Events & Symposiums")
+                    st.markdown("- 2. Annual National Coding Hackathon *'InnoHack'*")
+                    st.markdown("- 3. AI/ML Inter-College Research Symposium")
+                    st.markdown("- 4. Industry Expert Tech-Talk & Alumni Fireside Chat")
 
-                st.markdown("#### 🏆 Current Performing Students & Hackathon Winners")
+                st.markdown("####  Current Performing Students & Hackathon Winners")
                 top_students = db.query(Student).filter(
                     Student.college_code == college.code,
                     Student.branch == dept.branch_code
@@ -194,7 +194,7 @@ def render_leadership_view(current_role: UserRole):
     # TAB 3: ADMISSIONS CRM & LEAD FUNNEL
     # -------------------------------------------------------------------------
     with tab3:
-        st.subheader("📋 Prospective Parent & Student Admission Leads")
+        st.subheader(" Prospective Parent & Student Admission Leads")
         st.markdown("Live feed of escalated inquiries, entrance ranks, and quota selections requiring administrative follow-up.")
 
         with get_db() as db:
@@ -218,7 +218,7 @@ def render_leadership_view(current_role: UserRole):
                 } for l in leads]
                 st.dataframe(pd.DataFrame(lead_data), use_container_width=True)
 
-                st.markdown("### ⚙️ Quick Lead Status Update")
+                st.markdown("###  Quick Lead Status Update")
                 selected_lead_id = st.selectbox("Select Lead ID to Update", [l.id for l in leads])
                 new_status = st.selectbox("New Pipeline Status", ["New", "Contacted", "Verified", "Enrolled"])
                 if st.button("Update Lead Status", type="primary"):
@@ -233,7 +233,7 @@ def render_leadership_view(current_role: UserRole):
     # TAB 4: NAAC & NBA REGULATORY DOSSIERS
     # -------------------------------------------------------------------------
     with tab4:
-        st.subheader("📊 NAAC SSR & NBA Outcome-Based Education Compliance")
+        st.subheader(" NAAC SSR & NBA Outcome-Based Education Compliance")
         st.markdown(
             "Review criterion-level scores, Washington Accord PO1-PO12 attainment thresholds, "
             "and faculty Ph.D. cadre ratios."
@@ -241,7 +241,7 @@ def render_leadership_view(current_role: UserRole):
 
         col_r1, col_r2 = st.columns(2)
         with col_r1:
-            st.markdown("#### 📋 NAAC Criterion Summary (Cycle 4)")
+            st.markdown("####  NAAC Criterion Summary (Cycle 4)")
             naac_df = pd.DataFrame([
                 {"Criterion": "Criterion 1: Curricular Aspects", "Weightage": 150, "Score Awarded": 142},
                 {"Criterion": "Criterion 2: Teaching-Learning & Evaluation", "Weightage": 200, "Score Awarded": 188},
@@ -252,7 +252,7 @@ def render_leadership_view(current_role: UserRole):
             st.dataframe(naac_df, use_container_width=True)
 
         with col_r2:
-            st.markdown("#### 🎯 NBA Tier-1 OBE Outcome Attainment")
+            st.markdown("####  NBA Tier-1 OBE Outcome Attainment")
             nba_df = pd.DataFrame([
                 {"Program Outcome": "PO1: Engineering Knowledge", "Threshold": "75%", "Attainment Level": "88.5%"},
                 {"Program Outcome": "PO2: Problem Analysis", "Threshold": "75%", "Attainment Level": "82.0%"},
@@ -264,7 +264,7 @@ def render_leadership_view(current_role: UserRole):
 
         st.markdown("---")
         st.download_button(
-            "📥 Export NAAC & NBA Compliance Summary Report (CSV)",
+            " Export NAAC & NBA Compliance Summary Report (CSV)",
             data=naac_df.to_csv(index=False).encode('utf-8'),
             file_name="NAAC_NBA_Compliance_Report_2026.csv",
             mime="text/csv"
