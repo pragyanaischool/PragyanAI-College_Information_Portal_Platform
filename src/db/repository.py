@@ -299,10 +299,7 @@ class CollegeRepository:
 
     def create_outreach_lead(self, payload: dict) -> Any:
         """Saves an institutional bootcamp / STEM outreach MOU inquiry to the database."""
-        # Note: Ensure you have an OutreachLead model or adjust to your DB model.
-        # If storing in admission leads or a dedicated table, handle accordingly:
         try:
-            from src.db.models import AdmissionLead
             lead = AdmissionLead(
                 student_name=payload.get("coordinator_name", "Coordinator"),
                 parent_name=payload.get("school_name", "School"),
@@ -324,11 +321,13 @@ class CollegeRepository:
 
     def get_active_outreach_events(self) -> list:
         """Returns active outreach event tracks or bootcamps."""
-        return [
-            {"id": "tr-1", "title": "Generative AI & Agentic RAG Foundation", "duration": "4 Weeks"},
-            {"id": "tr-2", "title": "Embedded Linux & IoT Prototyping", "duration": "6 Weeks"},
-            {"id": "tr-3", "title": "VLSI Semiconductor Design & Verification", "duration": "8 Weeks"},
-        ]
+        try:
+            events = self.db.query(OutreachEvent).all()
+            if events:
+                return events
+        except Exception:
+            pass
+        return []
 
     def register_student_for_event(self, registration_data: Dict[str, Any]) -> EventRegistration:
         """Registers a student for an outreach event."""
@@ -518,4 +517,3 @@ class CollegeRepository:
             }
             for f in faculties
         ]
-        
