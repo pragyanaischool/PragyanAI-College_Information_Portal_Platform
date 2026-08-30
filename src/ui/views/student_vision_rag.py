@@ -11,13 +11,13 @@ from pathlib import Path
 import streamlit as st
 from src.core.config import settings
 from src.core.database import get_db
-from src.db.models import College, CollegePublishedProfile
+from src.db.models import College
 from src.ui.components.chat_interface import render_multimodal_chat
 
 
 def render_student_vision_rag_view():
     """Renders the student vision portal, database document manager, brochure hub, and RAG Q&A agent."""
-    st.title(" Student Vision, College Document Hub & Ask AI Assistant")
+    st.title("👁️ Student Vision, College Document Hub & Ask AI Assistant")
     st.markdown(
         "Welcome to the navigational compass for future engineers. Explore verified institution records, "
         "download official brochures and generic policy PDFs from the database, and query our RAG AI assistant instantly."
@@ -47,7 +47,7 @@ def render_student_vision_rag_view():
         )
 
     # 2. College Selection & Official Brochure Hub (DB Query Integration)
-    st.subheader(" College Selection & Official Brochure Repository")
+    st.subheader("🏛️ College Selection & Official Brochure Repository")
     st.markdown("Select a college to review its verified database profile, key metrics, and download its official publications.")
 
     # Fetch colleges from database
@@ -71,34 +71,27 @@ def render_student_vision_rag_view():
         key="student_vision_college_select"
     )
 
-    # Query DB for specific college record
+    # Query DB for specific college record safely
     college_record = None
-    pub_profile = None
     try:
         with get_db() as db:
-            college_record = db.query(College).filter_by(name=selected_college_name).first()
-            if not college_record:
-                # Try matching by code or partial name
-                college_record = db.query(College).filter(College.name.ilike(f"%{selected_college_name}%")).first()
-            
-            pub_profile = db.query(CollegePublishedProfile).filter_by(college_code=getattr(college_record, 'code', '')).first()
+            college_record = db.query(College).filter(College.name.ilike(f"%{selected_college_name}%")).first()
     except Exception:
         pass
 
-    # Display retrieved database telemetry for the selected college
     col_info, col_act = st.columns([3, 2])
     with col_info:
         if college_record:
-            st.markdown(f"####  `{college_record.code}` — {college_record.name}")
+            st.markdown(f"#### 📍 `{college_record.code}` — {college_record.name}")
             st.write(f"**Location:** {college_record.city}, {college_record.district}, {college_record.state}")
-            st.write(f"**Classification:** {'Autonomous Institution' if college_record.autonomous else 'University Affiliated'}")
+            st.write(f"**Classification:** {'Autonomous Institution' if getattr(college_record, 'autonomous', True) else 'University Affiliated'}")
             st.write(f"**Median CTC:** ₹ {getattr(college_record, 'median_ctc_lpa', 12.0)} LPA | **Peak Offer:** ₹ {getattr(college_record, 'highest_ctc_lpa', 50.0)} LPA")
         else:
-            st.markdown(f"####  {selected_college_name}")
+            st.markdown(f"#### 📍 {selected_college_name}")
             st.write("Verified database record in standby; displaying standard institutional profile telemetry.")
 
     with col_act:
-        st.markdown("#### Official Document Downloads")
+        st.markdown("#### 📥 Official Document Downloads")
         settings.ensure_directories()
         flyer_path = settings.BROCHURES_DIR / "Admission_Flyer_2026.pdf"
         roi_path = settings.BROCHURES_DIR / "Placement_ROI_Report_2026.pdf"
@@ -106,9 +99,9 @@ def render_student_vision_rag_view():
         if flyer_path.exists():
             with open(flyer_path, "rb") as f_flyer:
                 st.download_button(
-                    label=f" Download {selected_college_name[:12]}... Brochure (PDF)",
+                    label="📄 Download Official Brochure (PDF)",
                     data=f_flyer.read(),
-                    file_name=f"{selected_college_name.replace(' ', '_')}_Brochure.pdf",
+                    file_name="Institution_Brochure.pdf",
                     mime="application/pdf",
                     use_container_width=True
                 )
@@ -116,7 +109,7 @@ def render_student_vision_rag_view():
         if roi_path.exists():
             with open(roi_path, "rb") as f_roi:
                 st.download_button(
-                    label=" Download 4-Year Placement ROI Report (PDF)",
+                    label="📊 Download 4-Year Placement ROI Report (PDF)",
                     data=f_roi.read(),
                     file_name="Placement_ROI_Report_2026.pdf",
                     mime="application/pdf",
@@ -126,7 +119,7 @@ def render_student_vision_rag_view():
     st.markdown("---")
 
     # 3. Generic & Custom Document Ingestion Section for RAG
-    st.subheader(" Generic Documents & Custom Policy Ingestion")
+    st.subheader("📂 Generic Documents & Custom Policy Ingestion")
     st.markdown("Upload generic regulatory guidelines, fee structures, or exam schedules to append to the student RAG knowledge base.")
 
     up_col1, up_col2 = st.columns([2, 1])
@@ -139,7 +132,7 @@ def render_student_vision_rag_view():
         )
     with up_col2:
         st.markdown("<br/>", unsafe_allow_html=True)
-        if st.button(" Index Documents into RAG Base", type="primary", use_container_width=True):
+        if st.button("🚀 Index Documents into RAG Base", type="primary", use_container_width=True):
             if generic_docs:
                 st.success(f"Successfully ingested and indexed {len(generic_docs)} generic document(s) into the RAG vector store!")
             else:
@@ -148,10 +141,9 @@ def render_student_vision_rag_view():
     st.markdown("---")
 
     # 4. Ask AI Questions & RAG Model Q&A Interface
-    st.subheader(" Ask AI Questions & Contextual RAG Model")
+    st.subheader("💬 Ask AI Questions & Contextual RAG Model")
     st.markdown("Ask any question regarding admissions, fee brackets, cutoff rankings, or college policies. The RAG engine will query both database records and uploaded documents instantly.")
 
-    # Render Multimodal Chat Assistant Component
     render_multimodal_chat()
 
 
