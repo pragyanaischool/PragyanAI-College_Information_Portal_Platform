@@ -297,25 +297,37 @@ class CollegeRepository:
     # 4. OUTREACH & WEBINARS
     # =========================================================================
 
-    def get_outreach_events(self) -> List[Dict[str, Any]]:
-        """Returns all scheduled events as dictionaries."""
-        events = self.db.query(OutreachEvent).order_by(OutreachEvent.event_date.asc()).all()
+    def create_outreach_lead(self, payload: dict) -> Any:
+        """Saves an institutional bootcamp / STEM outreach MOU inquiry to the database."""
+        # Note: Ensure you have an OutreachLead model or adjust to your DB model.
+        # If storing in admission leads or a dedicated table, handle accordingly:
+        try:
+            from src.db.models import AdmissionLead
+            lead = AdmissionLead(
+                student_name=payload.get("coordinator_name", "Coordinator"),
+                parent_name=payload.get("school_name", "School"),
+                contact_email=payload.get("official_email", ""),
+                contact_phone=payload.get("contact_phone", ""),
+                target_college_code=payload.get("city_district", "Outreach"),
+                target_branch=payload.get("outreach_track", "Emerging-Tech"),
+                admission_type="STEM Outreach MOU",
+                intent_score=5,
+                query_notes=f"Batch Size: {payload.get('batch_size', '100')} | City: {payload.get('city_district', '')}"
+            )
+            self.db.add(lead)
+            self.db.commit()
+            self.db.refresh(lead)
+            return lead
+        except Exception as e:
+            self.db.rollback()
+            raise e
+
+    def get_active_outreach_events(self) -> list:
+        """Returns active outreach event tracks or bootcamps."""
         return [
-            {
-                "event_id": e.event_id,
-                "title": e.title,
-                "track": e.track,
-                "speaker_name": e.speaker_name,
-                "speaker_designation": e.speaker_designation,
-                "event_date": e.event_date,
-                "event_time": e.event_time,
-                "platform": e.platform,
-                "registration_fee": e.registration_fee,
-                "target_audience": e.target_audience,
-                "learning_outcomes": e.learning_outcomes,
-                "stream_url": getattr(e, "stream_url", None),
-            }
-            for e in events
+            {"id": "tr-1", "title": "Generative AI & Agentic RAG Foundation", "duration": "4 Weeks"},
+            {"id": "tr-2", "title": "Embedded Linux & IoT Prototyping", "duration": "6 Weeks"},
+            {"id": "tr-3", "title": "VLSI Semiconductor Design & Verification", "duration": "8 Weeks"},
         ]
 
     def register_student_for_event(self, registration_data: Dict[str, Any]) -> EventRegistration:
