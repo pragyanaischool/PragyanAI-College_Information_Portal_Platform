@@ -171,7 +171,7 @@ def main():
     elif active_role == UserRole.SCHOOL_PARTNER:
         view_options = [
             "🏠 Welcome Dashboard",
-            "💬 AI Decision Hub & Aspirant Desk",
+            "🏫 High School & PU Partner Desk",
             "🏛️ College Master Hub & Showcase",
             "🤖 AI RAG Chat & Profile Advisor",
         ]
@@ -194,6 +194,10 @@ def main():
         if "Welcome Dashboard" in view_selection:
             render_welcome_dashboard(active_role)
 
+        elif "High School & PU Partner Desk" in view_selection:
+            view_module = importlib.import_module("src.ui.views.2_🏫_School_Partner")
+            view_module.render_school_partner_view()
+
         elif "College Master Hub" in view_selection:
             view_module = importlib.import_module("src.ui.views.6_College_Master_Hub")
             view_module.render_college_master_hub_view()
@@ -215,7 +219,7 @@ def main():
             view_module.render_ai_rag_advisor_view(active_role)
 
         elif active_role == UserRole.SCHOOL_PARTNER:
-            view_module = importlib.import_module("src.ui.views.2_School_Partner")
+            view_module = importlib.import_module("src.ui.views.2_🏫_School_Partner")
             view_module.render_school_partner_view()
 
         elif active_role == UserRole.RECRUITER:
@@ -228,7 +232,7 @@ def main():
 
     except ModuleNotFoundError as err:
         st.error(f"Error loading view module for persona '{active_role}': {err}")
-        st.info("Verify that all view files exist in `src/ui/views/`.")
+        st.info("Verify that all view files exist in `src/ui/views/` (specifically `2_🏫_School_Partner.py`).")
     except Exception as ex:
         st.error(f"Unexpected error rendering view: {ex}")
 
