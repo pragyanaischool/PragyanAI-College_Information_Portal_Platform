@@ -23,6 +23,7 @@ from src.core.database import get_db
 from src.db.generate_data_files import generate_raw_documents
 from src.db.repository import CollegeRepository
 from src.ui.components.chat_interface import render_multimodal_chat
+from src.ui.components.college_directory_explorer import render_college_directory_explorer
 from src.ui.components.cutoff_explorer import (
     render_step1_score_input,
     render_step2_profiler_and_recommendations,
@@ -416,10 +417,10 @@ def render_aspirant_view():
                         st.error(f"Error submitting inquiry: {err}")
 
     # -------------------------------------------------------------------------
-    # TAB 9: Conversational Voice/Text AI Assistant
+    # TAB 9: Conversational Voice/Text AI Assistant (Passed unique key to prevent crash)
     # -------------------------------------------------------------------------
     with tab_ai:
-        render_multimodal_chat()
+        render_multimodal_chat(key="aspirant_desk_ai_guide_chat_input")
 
 
 if __name__ == "__main__":
