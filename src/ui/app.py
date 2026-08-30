@@ -30,7 +30,6 @@ from src.ui.styles import inject_custom_css
 # -----------------------------------------------------------------------------
 def bootstrap_application():
     """Initializes runtime directories, builds SQL schema tables, and triggers
-
     automatic seeding if tables or benchmark records are missing.
     """
     settings.ensure_directories()
@@ -62,10 +61,12 @@ def bootstrap_application():
                     generate_students_csv,
                 )
                 from src.db.seed_runner import seed_database
+                from src.db.seed_college_profiles import seed_comprehensive_college_profiles
 
                 generate_cutoffs_csv()
                 generate_students_csv()
                 seed_database()
+                seed_comprehensive_college_profiles()
 
     except Exception as e:
         st.warning(f"Notice during automatic database bootstrapping: {e}")
@@ -87,7 +88,7 @@ def render_company_logo_header():
 
 def render_welcome_dashboard(active_role: UserRole):
     """Renders a polished welcome dashboard with real-time institutional metrics."""
-    st.markdown(f"## 👋 Welcome to PragyanAI Hub, `{active_role.value}`!")
+    st.markdown(f"##  Welcome to PragyanAI Hub, `{active_role.value}`!")
     st.markdown(
         "Empowering educational institutions, aspiring engineering students, school counselors, "
         "and corporate recruiters with verified telemetry, predictive cutoff analytics, and conversational RAG intelligence."
@@ -118,7 +119,7 @@ def render_welcome_dashboard(active_role: UserRole):
         st.markdown("#### 3. AI RAG Knowledge Agent")
         st.write("Ask questions and receive instant AI-driven guidance on admissions and career pathways.")
 
-    st.info(" **Tip:** Use the sidebar **Role-Based Navigation** menu to jump directly to your authorized portals.")
+    st.info("💡 **Tip:** Use the sidebar **Role-Based Navigation** menu to jump directly to your authorized portals.")
 
 
 # -----------------------------------------------------------------------------
@@ -160,9 +161,9 @@ def main():
             "4 Institutional Analytics & Reports",
             "5 Student Inquiries & Engagement",
             "6 AI RAG Chat & Profile Advisor",
+            "7 Admin College Master Editor",
         ]
     elif active_role == UserRole.RECRUITER:
-        # EXACT Recruiter Menu Order Requested
         view_options = [
             "1 Welcome Dashboard",
             "2 Institutional Analytics & Comparative Reporting",
@@ -170,7 +171,6 @@ def main():
             "4 College Master Hub & Showcase",
             "5 Recruiter College Deep-Dive",
         ]
-        
     elif active_role == UserRole.SCHOOL_PARTNER:
         view_options = [
             "1 Welcome Dashboard",
@@ -181,9 +181,10 @@ def main():
         view_options = [
             "1 Welcome Dashboard",
             "2 AI Decision Hub & Aspirant Desk",
-            "3 College Deep-Dive & Governance",
-            "4 Admission RAG Advisory Chat",
-            "5 College Master Hub & Showcase",
+            "3 College Search & Advanced Directory",
+            "4 Student College Deep-Dive",
+            "5 Admission RAG Advisory Chat",
+            "6 College Master Hub & Showcase",
         ]
 
     view_selection = st.sidebar.radio(
@@ -200,6 +201,18 @@ def main():
         elif "AI Decision Hub & Aspirant Desk" in view_selection:
             view_module = importlib.import_module("src.ui.views.1_Aspirant_Desk")
             view_module.render_aspirant_view()
+
+        elif "College Search & Advanced Directory" in view_selection:
+            view_module = importlib.import_module("src.ui.views.16_College_Search_Directory")
+            view_module.render_college_search_directory_view()
+
+        elif "Student College Deep-Dive" in view_selection:
+            view_module = importlib.import_module("src.ui.views.15_Student_College_Deep_Dive")
+            view_module.render_student_college_deep_dive_view()
+
+        elif "Admin College Master Editor" in view_selection:
+            view_module = importlib.import_module("src.ui.views.17_Admin_College_Editor")
+            view_module.render_admin_college_editor_view()
 
         elif "College Deep-Dive" in view_selection:
             view_module = importlib.import_module("src.ui.views.10_College_Deep_Dive_Profile")
@@ -240,7 +253,7 @@ def main():
         elif active_role == UserRole.RECRUITER:
             view_module = importlib.import_module("src.ui.views.3_Recruiter_Desk")
             view_module.render_recruiter_view()
-       
+        
         elif "Recruiter College Deep-Dive" in view_selection:
             view_module = importlib.import_module("src.ui.views.12_Recruiter_Deep_Dive")
             view_module.render_recruiter_deep_dive_view()
@@ -252,10 +265,6 @@ def main():
         elif "Institutional Analytics & Comparative Reporting" in view_selection or "Institutional Analytics" in view_selection:
             view_module = importlib.import_module("src.ui.views.5_Analytics_Reporting_View")
             view_module.render_analytics_reporting_view(active_role)
-
-        elif "College Master Hub" in view_selection:
-            view_module = importlib.import_module("src.ui.views.6_College_Master_Hub")
-            view_module.render_college_master_hub_view()
             
         else:
             view_module = importlib.import_module("src.ui.views.1_Aspirant_Desk")
