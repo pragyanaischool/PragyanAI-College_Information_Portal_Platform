@@ -62,6 +62,11 @@ def render_ai_rag_advisor_view(current_role: UserRole):
                 "Tier-1 institutions maintain median placement CTCs between ₹11 LPA and ₹15 LPA, "
                 "with peak offers exceeding ₹50 LPA from multinational technology giants and high-frequency trading firms."
             )
+        elif "hostel" in query_lower or "accommodation" in query_lower:
+            response_text = (
+                "Most Tier-1 Bengaluru colleges provide on-campus hostel facilities with Wi-Fi, 24/7 security, "
+                "and mess facilities. Annual hostel and mess charges typically range between ₹85,000 and ₹1.2 Lakhs."
+            )
         else:
             response_text = (
                 f"Based on institutional telemetry for your query (*'{user_query}'*), PragyanAI's database indexes "
@@ -119,4 +124,5 @@ def render_ai_rag_advisor_view(current_role: UserRole):
 
 if __name__ == "__main__":
     render_ai_rag_advisor_view(UserRole.ASPIRANT)
+    
     
