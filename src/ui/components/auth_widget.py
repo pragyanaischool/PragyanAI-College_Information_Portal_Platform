@@ -1,62 +1,78 @@
 """
 src/ui/components/auth_widget.py
 
-Persona and Role Selection widget managing active Streamlit session states.
+Authentication and Role-Based Access Control (RBAC) Sidebar Widget for PragyanAI.
+Supports user registration, role selection, and secure session state management.
 """
 
 import streamlit as st
 from src.core.security import UserRole
 
 
-def render_auth_sidebar() -> str:
-    """Renders the role-based navigation controller on the sidebar."""
-    if "user_role" not in st.session_state:
-        st.session_state.user_role = UserRole.ASPIRANT.value
+def render_auth_sidebar():
+    """Renders the authentication and profile switcher in the Streamlit sidebar."""
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### 🔐 User Authentication & Portal Access")
 
-    st.sidebar.markdown(
-        """
-        <div style="text-align: center; padding-bottom: 1rem;">
-            <h2 style="margin: 0; color: #1e3a8a; font-weight: 800; font-size: 1.4rem;">🏛️ PragyanAI Hub</h2>
-            <p style="margin: 0; color: #64748b; font-size: 0.8rem; font-weight: 500;">College Intelligence & Decision Portal</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    # Initialize session state for user auth if not present
+    if "logged_in" not in st.session_state:
+        st.session_state.logged_in = False
+        st.session_state.user_email = ""
+        st.session_state.user_role = UserRole.STUDENT
+        st.session_state.user_name = "Guest Aspirant"
 
-    st.sidebar.markdown("### 👤 Select Access Persona")
-    selected_role = st.sidebar.selectbox(
-        "Current Active Role:",
-        [
-            UserRole.ASPIRANT.value,
-            UserRole.SCHOOL_PARTNER.value,
-            UserRole.RECRUITER.value,
-            UserRole.LEADERSHIP.value,
-        ],
-        index=0,
-        label_visibility="collapsed",
-    )
-    st.session_state.user_role = selected_role
+    if not st.session_state.logged_in:
+        auth_mode = st.sidebar.radio("Select Action:", ["🔑 Log In", "📝 Create Account"], horizontal=True, key="auth_mode_radio")
 
-    st.sidebar.divider()
-    st.sidebar.markdown("### 🌐 Regional Language")
-    lang = st.sidebar.selectbox(
-        "Language:",
-        ["English", "ಕನ್ನಡ (Kannada)", "हिंदी (Hindi)", "தமிழ் (Tamil)", "తెలుగు (Telugu)"],
-        index=0,
-        label_visibility="collapsed",
-    )
-    st.session_state.selected_language = lang
+        with st.sidebar.form("auth_form"):
+            email_input = st.text_input("Email Address *", placeholder="user@example.com", key="auth_email_input")
+            name_input = st.text_input("Full Name / Institution Name *", placeholder="Aarav Sharma", key="auth_name_input")
+            
+            selected_role = st.selectbox(
+                "Select Portal Role:",
+                [
+                    UserRole.STUDENT,
+                    UserRole.SCHOOL_PARTNER,
+                    UserRole.COLLEGE_ADMIN,
+                    UserRole.RECRUITER,
+                ],
+                format_func=lambda r: {
+                    UserRole.STUDENT: "🎓 Student / Aspirant",
+                    UserRole.SCHOOL_PARTNER: "🏫 School / PU Coordinator",
+                    UserRole.COLLEGE_ADMIN: "🏛️ College Admin / HOD",
+                    UserRole.RECRUITER: "💼 Corporate Recruiter",
+                }.get(r, str(r)),
+                key="auth_role_select",
+            )
 
-    st.sidebar.divider()
-    st.sidebar.markdown(
-        """
-        <div style="font-size: 0.75rem; color: #94a3b8; line-height: 1.4;">
-            <b>System Version:</b> 1.0.0-PROD<br>
-            <b>Engine:</b> LangGraph + Groq Llama 3.3 70B<br>
-            <b>Vector Store:</b> ChromaDB (MiniLM-L6-v2)
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+            submit_label = "Create Account & Enter Portal" if auth_mode == "📝 Create Account" else "Log In to Dashboard"
+            submitted = st.form_submit_button(submit_label, type="primary", use_container_width=True)
 
-    return selected_role
+            if submitted:
+                if not email_input or not name_input:
+                    st.error("Please provide both email and name.")
+                else:
+                    st.session_state.logged_in = True
+                    st.session_state.user_email = email_input.strip()
+                    st.session_state.user_name = name_input.strip()
+                    st.session_state.user_role = selected_role
+                    st.success(f"Welcome, {st.session_state.user_name}! Logged in successfully.")
+                    st.rerun()
+    else:
+        st.sidebar.success(f"👤 **{st.session_state.user_name}**")
+        
+        role_display = {
+            UserRole.STUDENT: "🎓 Student / Aspirant",
+            UserRole.SCHOOL_PARTNER: "🏫 School / PU Coordinator",
+            UserRole.COLLEGE_ADMIN: "🏛️ College Admin / HOD",
+            UserRole.RECRUITER: "💼 Corporate Recruiter",
+        }.get(st.session_state.user_role, str(st.session_state.user_role))
+
+        st.sidebar.caption(f"Role: **{role_display}**")
+        st.sidebar.caption(f"Email: `{st.session_state.user_email}`")
+
+        if st.sidebar.button("🚪 Log Out / Switch Account", use_container_width=True, key="btn_logout"):
+            st.session_state.logged_in = False
+            st.session_state.user_email = ""
+            st.session_state.user_name = "Guest Aspirant"
+            st.rerun()
