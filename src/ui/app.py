@@ -105,6 +105,8 @@ def main():
             "🏛️ College Master Hub & Showcase",
             "📊 Institutional Analytics & Reports",
             "🏛️ Dean & Leadership Governance",
+            "👥 Student Inquiries & Engagement",
+            "🤖 AI RAG Profile Optimizer",
         ],
         key="main_navigation_selector"
     )
@@ -122,6 +124,14 @@ def main():
         elif "Dean & Leadership" in view_selection or active_role in [UserRole.LEADERSHIP, UserRole.ADMIN]:
             view_module = importlib.import_module("src.ui.views.4_Leadership_View")
             view_module.render_leadership_view(active_role)
+
+        elif "Student Inquiries" in view_selection:
+            view_module = importlib.import_module("src.ui.views.7_Student_Engagement_Hub")
+            view_module.render_student_engagement_view(active_role)
+
+        elif "AI RAG Profile Optimizer" in view_selection:
+            view_module = importlib.import_module("src.ui.views.8_AI_Admissions_RAG_Advisor")
+            view_module.render_ai_rag_advisor_view(active_role)
 
         elif active_role == UserRole.SCHOOL_PARTNER:
             view_module = importlib.import_module("src.ui.views.2_School_Partner")
@@ -144,3 +154,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
