@@ -2,19 +2,24 @@
 src/ui/components/cutoff_explorer.py
 
 5-Step Comprehensive Aspirant Decision Engine:
-Step 1: Multi-Test Manual Score & Profile Input (KCET, COMEDK, JEE Main, Boards)
-Step 2: Admission Profiler with Affiliation (Autonomous/VTU/Deemed), City, Fees & Top Recommendations
+Step 1: Multi-Test Manual Score & Candidate Profiler (DB Ingestion + Vector Indexing)
+        - Scores: KCET, COMEDK, JEE Main, PESSAT, 12th Board PCM %
+        - Preferences: Preferred City, College Type (Autonomous/University/VTU),
+          Seat Quota (Govt/Management), Max Annual Fee, Min Median & Highest CTC ranges.
+Step 2: Admission Profiler with Affiliation, City, Fees, Payback & Top Recommendations
 Step 3: Compare Any Two Colleges Side-by-Side (Selectable from Recommendations or Full Directory)
 Step 4: Institutional Knowledge Directory & Verified Direct Web Portals
 Step 5: Voice of Stakeholders (Alumni, Students, Recruiters, HODs & Principal with LinkedIn, Videos, Audio & Quotes)
 """
 
+import uuid
 from typing import Any, Dict, List, Optional
 import pandas as pd
 import streamlit as st
 
 from src.core.database import get_db
 from src.db.repository import CollegeRepository
+from src.rag_engine.vector_db import ChromaVectorStore
 from src.utils.audio_tts import synthesize_speech_bytes
 
 # =============================================================================
@@ -188,25 +193,30 @@ def _fetch_all_colleges_as_dicts() -> List[Dict[str, Any]]:
                     "code": str(getattr(obj, "code", "")),
                     "name": str(getattr(obj, "name", "")),
                     "short_name": str(getattr(obj, "short_name", "")),
+                    "state": str(getattr(obj, "state", "Karnataka")),
+                    "district": str(getattr(obj, "district", "Bengaluru Urban")),
                     "city": str(getattr(obj, "city", "Bengaluru")),
-                    "nirf_rank_2025": getattr(obj, "nirf_rank_2025", 100),
+                    "address": str(getattr(obj, "address", "Bengaluru, Karnataka")),
+                    "established_year": getattr(obj, "established_year", 1960),
+                    "autonomous": getattr(obj, "autonomous", True),
                     "naac_grade": str(getattr(obj, "naac_grade", "A")),
                     "naac_cgpa": float(getattr(obj, "naac_cgpa", 3.0)),
-                    "median_ctc_lpa": float(getattr(obj, "median_ctc_lpa", 8.0)),
-                    "highest_ctc_lpa": float(getattr(obj, "highest_ctc_lpa", 25.0)),
+                    "nirf_rank_2025": getattr(obj, "nirf_rank_2025", 100),
+                    "intake_total": getattr(obj, "intake_total", 1200),
                     "mgmt_fee_cse_lakhs": float(getattr(obj, "mgmt_fee_cse_lakhs", 10.0)),
                     "govt_fee_cet_lakhs": float(getattr(obj, "govt_fee_cet_lakhs", 1.07)),
                     "comedk_fee_lakhs": float(getattr(obj, "comedk_fee_lakhs", 2.81)),
                     "nba_accredited_programs": int(getattr(obj, "nba_accredited_programs", 6)),
-                    "autonomous": bool(getattr(obj, "autonomous", True)),
-                    "established_year": int(getattr(obj, "established_year", 1960)),
+                    "median_ctc_lpa": float(getattr(obj, "median_ctc_lpa", 8.0)),
+                    "highest_ctc_lpa": float(getattr(obj, "highest_ctc_lpa", 25.0)),
+                    "website_link": getattr(obj, "website_link", "https://cetonline.karnataka.gov.in/kea/"),
                     "principal_statement": str(getattr(obj, "principal_statement", "")),
                 }
 
             # Map institutional affiliation types
             if "PES" in d["name"]:
                 d["affiliation_type"] = "Private State University"
-            elif d["autonomous"]:
+            elif d.get("autonomous", True):
                 d["affiliation_type"] = "Autonomous (VTU Affiliated)"
             else:
                 d["affiliation_type"] = "VTU Affiliated (Non-Autonomous)"
@@ -216,79 +226,203 @@ def _fetch_all_colleges_as_dicts() -> List[Dict[str, Any]]:
 
 
 # =============================================================================
-# STEP 1: MULTI-TEST SCORE & RANK PROFILER
+# STEP 1: MULTI-TEST SCORE & CANDIDATE PROFILER (DB INGESTION + VECTOR EMBEDDING)
 # =============================================================================
 def render_step1_score_input():
-    """Step 1: Multi-Test Manual Score & Rank Entry."""
-    st.subheader("📝 Step 1: Multi-Test Score & Candidate Profiler")
-    st.caption("Enter your entrance ranks and academic marks to evaluate all engineering admission pathways.")
+    """Step 1: Multi-Test Scores, City, Governance, Quota, Budget & Salary Range Ingestion."""
+    st.subheader("📝 Step 1: Candidate Multi-Test Profiler & Admission Preferences")
+    st.caption("Provide your entrance scores and target criteria. This profile will be ingested into SQL & ChromaDB to evaluate matches across all benchmark colleges.")
 
-    f_col1, f_col2, f_col3, f_col4 = st.columns(4)
-    with f_col1:
-        st.session_state.p_kcet_rank = st.number_input(
-            "KCET Engineering Rank:",
-            min_value=0,
-            max_value=250000,
-            value=st.session_state.get("p_kcet_rank", 3800),
-            step=100,
-            help="Enter 0 if not attempted.",
-        )
-        st.session_state.p_kcet_marks = st.number_input(
-            "KCET PCM Marks (/180):",
-            min_value=0,
-            max_value=180,
-            value=st.session_state.get("p_kcet_marks", 142),
-        )
-    with f_col2:
-        st.session_state.p_comedk_rank = st.number_input(
-            "COMEDK UGET Rank:",
-            min_value=0,
-            max_value=120000,
-            value=st.session_state.get("p_comedk_rank", 2500),
-            step=100,
-            help="Enter 0 if not attempted.",
-        )
-        st.session_state.p_comedk_marks = st.number_input(
-            "COMEDK Marks (/180):",
-            min_value=0,
-            max_value=180,
-            value=st.session_state.get("p_comedk_marks", 128),
-        )
-    with f_col3:
-        st.session_state.p_jee_percentile = st.number_input(
-            "JEE Main Percentile (NTA):",
-            min_value=0.0,
-            max_value=100.0,
-            value=st.session_state.get("p_jee_percentile", 95.2),
-            step=0.1,
-        )
-        st.session_state.p_pessat_rank = st.number_input(
-            "PESSAT / Institutional Rank:",
-            min_value=0,
-            max_value=50000,
-            value=st.session_state.get("p_pessat_rank", 1100),
-            step=50,
-        )
-    with f_col4:
-        st.session_state.p_board_pcm_pct = st.number_input(
-            "12th / PUC PCM Aggregate (%):",
-            min_value=35.0,
-            max_value=100.0,
-            value=st.session_state.get("p_board_pcm_pct", 92.5),
-            step=0.5,
-        )
-        st.session_state.p_branch = st.selectbox(
-            "Preferred Engineering Branch:",
-            ["CSE", "AI-DS", "ISE", "ECE", "MECH"],
-            index=0,
-            key="p_target_branch_select",
+    if "user_session_id" not in st.session_state:
+        st.session_state.user_session_id = f"sess-{uuid.uuid4().hex[:8]}"
+
+    colleges = _fetch_all_colleges_as_dicts()
+    available_cities = sorted(list({c["city"] for c in colleges}))
+    available_types = ["All Types", "Autonomous (VTU Affiliated)", "Private State University", "VTU Affiliated (Non-Autonomous)"]
+
+    with st.form("candidate_profile_step1_form"):
+        # 1. Entrance Test Scores Grid
+        st.markdown("#### 🎓 1. Entrance Test Scores & Academic Credentials")
+        f1, f2, f3, f4 = st.columns(4)
+        with f1:
+            kcet_rank = st.number_input(
+                "KCET Engineering Rank:",
+                min_value=0,
+                max_value=250000,
+                value=st.session_state.get("p_kcet_rank", 3800),
+                step=100,
+                help="Enter 0 if not attempted.",
+            )
+            kcet_marks = st.number_input(
+                "KCET PCM Marks (/180):",
+                min_value=0,
+                max_value=180,
+                value=st.session_state.get("p_kcet_marks", 142),
+            )
+        with f2:
+            comedk_rank = st.number_input(
+                "COMEDK UGET Rank:",
+                min_value=0,
+                max_value=120000,
+                value=st.session_state.get("p_comedk_rank", 2500),
+                step=100,
+                help="Enter 0 if not attempted.",
+            )
+            comedk_marks = st.number_input(
+                "COMEDK Marks (/180):",
+                min_value=0,
+                max_value=180,
+                value=st.session_state.get("p_comedk_marks", 128),
+            )
+        with f3:
+            jee_pct = st.number_input(
+                "JEE Main Percentile (NTA):",
+                min_value=0.0,
+                max_value=100.0,
+                value=st.session_state.get("p_jee_percentile", 95.2),
+                step=0.1,
+            )
+            pessat_rank = st.number_input(
+                "PESSAT / Institutional Rank:",
+                min_value=0,
+                max_value=50000,
+                value=st.session_state.get("p_pessat_rank", 1100),
+                step=50,
+            )
+        with f4:
+            board_pcm = st.number_input(
+                "12th / PUC PCM Aggregate (%):",
+                min_value=35.0,
+                max_value=100.0,
+                value=st.session_state.get("p_board_pcm_pct", 92.5),
+                step=0.5,
+            )
+            branch = st.selectbox(
+                "Preferred Branch:",
+                ["CSE", "AI-DS", "ISE", "ECE", "MECH"],
+                index=0,
+            )
+
+        st.markdown("---")
+        # 2. Institutional Preferences & Location
+        st.markdown("#### 🏛️ 2. Institutional Type, City & Seat Quota Pathway")
+        c1, c2, c3, c4 = st.columns(4)
+        with c1:
+            pref_city = st.selectbox("Preferred Location / City:", ["All Cities"] + available_cities, index=0)
+        with c2:
+            pref_type = st.selectbox("College Affiliation Type:", available_types, index=0)
+        with c3:
+            quota_path = st.selectbox(
+                "Admission Quota Pathway:",
+                ["Govt Merit Quota (CET)", "COMEDK Quota", "Management Quota (Direct)", "Any Feasible Quota"],
+                index=0,
+            )
+        with c4:
+            category = st.selectbox("Reservation Quota:", ["GM", "1G", "2A", "2B", "3A", "3B", "SC", "ST"], index=0)
+
+        st.markdown("---")
+        # 3. Financial Budget & Placement Salary Range
+        st.markdown("#### 💰 3. Annual Fee Budget & Placement Salary Target (₹ Lakhs)")
+        b1, b2, b3 = st.columns(3)
+        with b1:
+            max_fee = st.slider(
+                "Maximum Annual Tuition Budget (₹ Lakhs/yr):",
+                min_value=1.0,
+                max_value=20.0,
+                value=st.session_state.get("p_max_fee", 12.0),
+                step=0.5,
+            )
+        with b2:
+            min_median_ctc = st.slider(
+                "Minimum Acceptable Median CTC (₹ LPA):",
+                min_value=4.0,
+                max_value=18.0,
+                value=st.session_state.get("p_min_median_ctc", 8.5),
+                step=0.5,
+            )
+        with b3:
+            target_high_ctc = st.slider(
+                "Target Dream Placement Package (₹ LPA):",
+                min_value=15.0,
+                max_value=70.0,
+                value=st.session_state.get("p_target_high_ctc", 35.0),
+                step=1.0,
+            )
+
+        submit_profile = st.form_submit_button(
+            "💾 Ingest Profile & Proceed to Step 2 ➡️",
+            type="primary",
+            use_container_width=True,
         )
 
-    st.session_state.p_category = st.selectbox(
-        "Reservation / Quota Category:",
-        ["GM", "1G", "2A", "2B", "3A", "3B", "SC", "ST"],
-        index=0,
-    )
+        if submit_profile:
+            # Sync session state variables
+            st.session_state.p_kcet_rank = kcet_rank
+            st.session_state.p_kcet_marks = kcet_marks
+            st.session_state.p_comedk_rank = comedk_rank
+            st.session_state.p_comedk_marks = comedk_marks
+            st.session_state.p_jee_percentile = jee_pct
+            st.session_state.p_pessat_rank = pessat_rank
+            st.session_state.p_board_pcm_pct = board_pcm
+            st.session_state.p_branch = branch
+            st.session_state.p_category = category
+            st.session_state.p_city = pref_city
+            st.session_state.p_type = pref_type
+            st.session_state.p_quota = quota_path
+            st.session_state.p_max_fee = max_fee
+            st.session_state.p_min_median_ctc = min_median_ctc
+            st.session_state.p_target_high_ctc = target_high_ctc
+
+            # Text summary for semantic embeddings
+            profile_summary = (
+                f"Candidate Profile [Session: {st.session_state.user_session_id}]: KCET Rank #{kcet_rank}, COMEDK #{comedk_rank}, "
+                f"JEE {jee_pct}%, 12th PCM {board_pcm}%. Target Branch: {branch} ({category}). "
+                f"Preferences: City={pref_city}, Affiliation={pref_type}, Quota={quota_path}, "
+                f"Max Fee Budget=₹{max_fee} LPA, Target Median CTC >= ₹{min_median_ctc} LPA."
+            )
+
+            # Ingest to SQL Database
+            try:
+                with get_db() as db:
+                    repo = CollegeRepository(db)
+                    repo.save_candidate_profile({
+                        "session_id": st.session_state.user_session_id,
+                        "kcet_rank": kcet_rank,
+                        "kcet_marks": kcet_marks,
+                        "comedk_rank": comedk_rank,
+                        "comedk_marks": comedk_marks,
+                        "jee_percentile": jee_pct,
+                        "pessat_rank": pessat_rank,
+                        "board_pcm_pct": board_pcm,
+                        "preferred_branch": branch,
+                        "category_quota": category,
+                        "preferred_city": pref_city,
+                        "preferred_college_type": pref_type,
+                        "seat_quota_pathway": quota_path,
+                        "max_annual_fee_lakhs": max_fee,
+                        "min_median_ctc_lpa": min_median_ctc,
+                        "target_highest_ctc_lpa": target_high_ctc,
+                        "profile_summary_text": profile_summary,
+                    })
+
+                # Ingest to ChromaDB Vector Store
+                vstore = ChromaVectorStore()
+                vstore.add_documents([{
+                    "text": profile_summary,
+                    "metadata": {
+                        "source": "Candidate_Profile_Step1",
+                        "session_id": st.session_state.user_session_id,
+                        "category": "CandidateProfiles",
+                        "chunk_id": f"cand_prof_{st.session_state.user_session_id}",
+                    },
+                }])
+
+                st.session_state.aspirant_journey_step = 2
+                st.success("✅ Profile & Preferences successfully ingested into SQL & Vector DB! Transitioning to Step 2...")
+                st.rerun()
+
+            except Exception as e:
+                st.error(f"Error saving profile: {e}")
 
 
 # =============================================================================
@@ -297,7 +431,7 @@ def render_step1_score_input():
 def render_step2_profiler_and_recommendations():
     """Step 2: Admission Profiler with Affiliation, City, Fees, and Top Ranked Recommendations."""
     st.subheader("🎯 Step 2: Entrance Cutoff & Multi-Test Admission Profiler")
-    st.caption("Institution matching incorporating college type (University / Autonomous / VTU), city, fees, and smart recommendations.")
+    st.caption("Matches institutions against your entrance ranks, fee budget, location, and placement salary targets.")
 
     colleges = _fetch_all_colleges_as_dicts()
     target_branch = st.session_state.get("p_branch", "CSE")
@@ -305,38 +439,57 @@ def render_step2_profiler_and_recommendations():
     comedk_rank = st.session_state.get("p_comedk_rank", 2500)
     jee_pct = st.session_state.get("p_jee_percentile", 95.2)
     board_pct = st.session_state.get("p_board_pcm_pct", 92.5)
+    pref_city = st.session_state.get("p_city", "All Cities")
+    pref_type = st.session_state.get("p_type", "All Types")
+    quota_path = st.session_state.get("p_quota", "Govt Merit Quota (CET)")
+    max_fee = st.session_state.get("p_max_fee", 15.0)
+    min_median_ctc = st.session_state.get("p_min_median_ctc", 8.0)
 
     evaluated_records = []
-    recommended_colleges = []
+    top_matches = []
 
     for c in colleges:
+        # Location & Affiliation Filters
+        if pref_city != "All Cities" and c["city"] != pref_city:
+            continue
+        if pref_type != "All Types" and c["affiliation_type"] != pref_type:
+            continue
+
+        # Fee Assessment based on Quota Pathway
+        if quota_path == "Govt Merit Quota (CET)":
+            applicable_fee = c["govt_fee_cet_lakhs"]
+        elif quota_path == "COMEDK Quota":
+            applicable_fee = c["comedk_fee_lakhs"]
+        else:
+            applicable_fee = c["mgmt_fee_cse_lakhs"]
+
+        fee_matched = applicable_fee <= max_fee
+        ctc_matched = c["median_ctc_lpa"] >= min_median_ctc
+
+        # Cutoff Benchmarks
         nirf = c["nirf_rank_2025"] if isinstance(c["nirf_rank_2025"], int) else 100
         base_benchmark = nirf * 35
-
-        # KCET Pathway
         kcet_cutoff = int(base_benchmark * 1.0)
-        if kcet_rank > 0 and kcet_rank <= kcet_cutoff:
-            kcet_feasibility = f"🟢 Safe (Cutoff #{kcet_cutoff:,})"
-            score_match = True
-        elif kcet_rank > 0 and kcet_rank <= kcet_cutoff * 1.2:
-            kcet_feasibility = f"🟠 Borderline (Cutoff #{kcet_cutoff:,})"
-            score_match = True
-        else:
-            kcet_feasibility = f"🔴 Ambitious (#{kcet_cutoff:,})"
-            score_match = False
-
-        # COMEDK Pathway
         comedk_cutoff = int(base_benchmark * 1.45)
-        if comedk_rank > 0 and comedk_rank <= comedk_cutoff:
-            comedk_feasibility = f"🟢 Safe (Cutoff #{comedk_cutoff:,})"
-            score_match = True
-        elif comedk_rank > 0 and comedk_rank <= comedk_cutoff * 1.2:
-            comedk_feasibility = f"🟠 Borderline (Cutoff #{comedk_cutoff:,})"
-            score_match = True
-        else:
-            comedk_feasibility = f"🔴 Ambitious (#{comedk_cutoff:,})"
 
-        # Scholarship & Merit Concession
+        if kcet_rank > 0 and kcet_rank <= kcet_cutoff:
+            kcet_status = f"🟢 Safe (#{kcet_cutoff:,})"
+            rank_pass = True
+        elif kcet_rank > 0 and kcet_rank <= kcet_cutoff * 1.2:
+            kcet_status = f"🟠 Borderline (#{kcet_cutoff:,})"
+            rank_pass = True
+        else:
+            kcet_status = f"🔴 Ambitious (#{kcet_cutoff:,})"
+            rank_pass = False
+
+        if comedk_rank > 0 and comedk_rank <= comedk_cutoff:
+            comedk_status = f"🟢 Safe (#{comedk_cutoff:,})"
+        elif comedk_rank > 0 and comedk_rank <= comedk_cutoff * 1.2:
+            comedk_status = f"🟠 Borderline (#{comedk_cutoff:,})"
+        else:
+            comedk_status = f"🔴 Ambitious (#{comedk_cutoff:,})"
+
+        # Merit Scholarship Tag
         if board_pct >= 90.0 and (jee_pct >= 92.0 or kcet_rank < 2500):
             merit_tag = "🌟 50% Tuition Scholarship"
         elif board_pct >= 85.0 or jee_pct >= 88.0:
@@ -344,7 +497,7 @@ def render_step2_profiler_and_recommendations():
         else:
             merit_tag = "Standard Fee"
 
-        rec_item = {
+        rec = {
             "code": c["code"],
             "name": c["name"],
             "short_name": c["short_name"],
@@ -352,88 +505,86 @@ def render_step2_profiler_and_recommendations():
             "type": c["affiliation_type"],
             "nirf": f"#{c['nirf_rank_2025']}",
             "naac": f"{c['naac_grade']} ({c['naac_cgpa']})",
-            "govt_fee": f"₹{c['govt_fee_cet_lakhs']}L/yr",
-            "comedk_fee": f"₹{c['comedk_fee_lakhs']}L/yr",
-            "mgmt_fee": f"₹{c['mgmt_fee_cse_lakhs']}L/yr",
+            "govt_fee": f"₹{c['govt_fee_cet_lakhs']}L",
+            "comedk_fee": f"₹{c['comedk_fee_lakhs']}L",
+            "mgmt_fee": f"₹{c['mgmt_fee_cse_lakhs']}L",
             "median_ctc": f"₹{c['median_ctc_lpa']} LPA",
             "highest_ctc": f"₹{c['highest_ctc_lpa']} LPA",
-            "kcet_status": kcet_feasibility,
-            "comedk_status": comedk_feasibility,
+            "kcet_status": kcet_status,
+            "comedk_status": comedk_status,
             "merit_tag": merit_tag,
+            "fee_matched": fee_matched,
+            "ctc_matched": ctc_matched,
+            "rank_pass": rank_pass,
         }
-        evaluated_records.append(rec_item)
+        evaluated_records.append(rec)
 
-        if score_match or "Safe" in kcet_feasibility or "Safe" in comedk_feasibility:
-            recommended_colleges.append(c["code"])
+        if rank_pass and fee_matched and ctc_matched:
+            top_matches.append(rec)
 
-    df_display = pd.DataFrame([
-        {
-            "Code": r["code"],
-            "College Name": r["name"],
-            "City": r["city"],
-            "Affiliation Type": r["type"],
-            "NIRF 2025": r["nirf"],
-            "NAAC Grade": r["naac"],
-            "KCET Feasibility": r["kcet_status"],
-            "COMEDK Feasibility": r["comedk_status"],
-            "Govt CET Fee": r["govt_fee"],
-            "COMEDK Fee": r["comedk_fee"],
-            "Mgmt Fee": r["mgmt_fee"],
-            "Median CTC": r["median_ctc"],
-            "Highest CTC": r["highest_ctc"],
-            "Scholarship Offer": r["merit_tag"],
-        }
-        for r in evaluated_records
-    ])
+    # Render Applied Filters Summary
+    st.info(
+        f"🎯 **Applied Constraints:** Branch: `{target_branch}` | City: `{pref_city}` | Type: `{pref_type}` | "
+        f"Pathway: `{quota_path}` | Max Fee: `₹{max_fee}L/yr` | Min Median CTC: `₹{min_median_ctc} LPA`"
+    )
 
-    st.markdown(f"#### 📋 Full Multi-Pathway Feasibility Matrix ({target_branch})")
-    st.dataframe(df_display, use_container_width=True, hide_index=True)
+    if evaluated_records:
+        df_display = pd.DataFrame([
+            {
+                "Code": r["code"],
+                "College Name": r["name"],
+                "City": r["city"],
+                "Affiliation Type": r["type"],
+                "NIRF 2025": r["nirf"],
+                "NAAC Grade": r["naac"],
+                "KCET Match": r["kcet_status"],
+                "COMEDK Match": r["comedk_status"],
+                "CET Fee": r["govt_fee"],
+                "COMEDK Fee": r["comedk_fee"],
+                "Mgmt Fee": r["mgmt_fee"],
+                "Median CTC": r["median_ctc"],
+                "Highest CTC": r["highest_ctc"],
+                "Scholarship": r["merit_tag"],
+            }
+            for r in evaluated_records
+        ])
+        st.dataframe(df_display, use_container_width=True, hide_index=True)
 
-    # Recommendations highlight cards
-    st.markdown("---")
-    st.markdown("### 🏆 Top Recommended Institutions for Your Profile")
-    st.caption("Algorithmically matched based on your KCET, COMEDK, and Board PCM merit thresholds:")
+        st.markdown("---")
+        st.markdown("### 🏆 Algorithmically Ranked Recommendations")
+        matches_to_show = top_matches[:3] if top_matches else evaluated_records[:3]
 
-    top_matches = [r for r in evaluated_records if "🟢" in r["kcet_status"] or "🟢" in r["comedk_status"]][:3]
-    if not top_matches:
-        top_matches = evaluated_records[:3]
-
-    r_cols = st.columns(len(top_matches))
-    for idx, match in enumerate(top_matches):
-        with r_cols[idx]:
-            st.markdown(
-                f"""
-                <div style="
-                    background: #ffffff;
-                    border: 2px solid #2563eb;
-                    border-radius: 12px;
-                    padding: 1.1rem;
-                    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.08);
-                    min-height: 220px;
-                ">
-                    <div style="font-size: 0.8rem; font-weight: 700; color: #2563eb; text-transform: uppercase;">
-                        ⭐ Recommended Match #{idx+1}
+        r_cols = st.columns(len(matches_to_show))
+        for idx, m in enumerate(matches_to_show):
+            with r_cols[idx]:
+                st.markdown(
+                    f"""
+                    <div style="
+                        background: #ffffff;
+                        border: 2px solid #2563eb;
+                        border-radius: 12px;
+                        padding: 1rem;
+                        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.08);
+                        min-height: 230px;
+                    ">
+                        <div style="font-size: 0.8rem; font-weight: 700; color: #2563eb;">⭐ TOP MATCH #{idx+1}</div>
+                        <div style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 0.2rem 0;">{m['short_name']} ({m['code']})</div>
+                        <div style="font-size: 0.8rem; color: #64748b;">📍 {m['city']} | 🏛️ {m['type']}</div>
+                        <hr style="margin: 0.4rem 0; border: none; border-top: 1px solid #f1f5f9;"/>
+                        <div style="font-size: 0.82rem; color: #334155;">
+                            <b>Median CTC:</b> {m['median_ctc']} (Highest: {m['highest_ctc']})<br/>
+                            <b>Govt Fee:</b> {m['govt_fee']} | <b>Mgmt:</b> {m['mgmt_fee']}<br/>
+                            <b>KCET Match:</b> {m['kcet_status']}<br/>
+                            <b>Scholarship:</b> <span style="color:#059669; font-weight:600;">{m['merit_tag']}</span>
+                        </div>
                     </div>
-                    <div style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 0.3rem 0;">
-                        {match['short_name']} ({match['code']})
-                    </div>
-                    <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.5rem;">
-                        📍 {match['city']} | 🏛️ {match['type']}
-                    </div>
-                    <hr style="margin: 0.4rem 0; border: none; border-top: 1px solid #f1f5f9;"/>
-                    <div style="font-size: 0.82rem; color: #334155;">
-                        <b>Median CTC:</b> {match['median_ctc']}<br/>
-                        <b>NAAC Grade:</b> {match['naac']}<br/>
-                        <b>KCET:</b> {match['kcet_status']}<br/>
-                        <b>Scholarship:</b> <span style="color:#059669; font-weight:600;">{match['merit_tag']}</span>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+                    """,
+                    unsafe_allow_html=True,
+                )
 
-    # Persist recommended codes in session
-    st.session_state.recommended_college_codes = [r["code"] for r in top_matches]
+        st.session_state.recommended_college_codes = [m["code"] for m in matches_to_show]
+    else:
+        st.warning("No colleges found matching all strict location and affiliation criteria. Try widening your filters.")
 
 
 # =============================================================================
@@ -447,13 +598,11 @@ def render_step3_side_by_side_comparison():
     all_colleges = _fetch_all_colleges_as_dicts()
     recommended_codes = st.session_state.get("recommended_college_codes", ["E001", "E002"])
 
-    # Provide recommended options first
     college_options = [f"{c['code']} - {c['name']} ({c['city']})" for c in all_colleges]
 
     c_rec1 = recommended_codes[0] if len(recommended_codes) > 0 else "E001"
     c_rec2 = recommended_codes[1] if len(recommended_codes) > 1 else ("E002" if len(all_colleges) > 1 else "E001")
 
-    # Find default index in list
     def_idx1 = 0
     def_idx2 = 1 if len(college_options) > 1 else 0
     for idx, opt in enumerate(college_options):
