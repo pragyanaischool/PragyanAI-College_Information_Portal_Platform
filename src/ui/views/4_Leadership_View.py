@@ -56,7 +56,7 @@ def render_leadership_view(current_role: UserRole):
     ])
 
     # -------------------------------------------------------------------------
-    # TAB 1: OVERALL COLLEGE MASTER HUB (Type, Vision, Growth & Achievements)
+    # TAB 1: OVERALL COLLEGE MASTER HUB
     # -------------------------------------------------------------------------
     with tab1:
         st.subheader("🌐 Comprehensive Institutional Profiles & Governance")
@@ -68,10 +68,9 @@ def render_leadership_view(current_role: UserRole):
                 return
 
             college_names = [c.name for c in colleges]
-            selected_college_name = st.selectbox("Select Institution for Audit", college_names)
+            selected_college_name = st.selectbox("Select Institution for Audit", college_names, key="lead_col_sel")
             college = next((c for c in colleges if c.name == selected_college_name), colleges[0])
 
-        # Render Overview Layout
         col_a, col_b = st.columns([2, 1])
         with col_a:
             st.markdown(f"### {college.name} (`{college.short_name}`)")
@@ -91,7 +90,7 @@ def render_leadership_view(current_role: UserRole):
 
         st.markdown("#### 📈 Growth & Institutional Achievements")
         st.write(
-            f"Over six decades of academic excellence, **{college.short_name}** has transitioned into a premier "
+            f"Over decades of academic excellence, **{college.short_name}** has transitioned into a premier "
             "deep-tech hub. Recognized for pioneering R&D grants from DST and AICTE, the institution maintains an "
             f"impressive placement median of **₹{college.median_ctc_lpa} LPA** with peak offers reaching **₹{college.highest_ctc_lpa} LPA**."
         )
@@ -135,14 +134,14 @@ def render_leadership_view(current_role: UserRole):
                 st.info(f"No specific department records indexed for {college.name}.")
             else:
                 dept_names = [d.branch_name for d in departments]
-                selected_dept_name = st.selectbox("Select Department / Branch", dept_names)
+                selected_dept_name = st.selectbox("Select Department / Branch", dept_names, key="lead_dept_sel")
                 dept = next((d for d in departments if d.branch_name == selected_dept_name), departments[0])
 
                 col_d1, col_d2 = st.columns(2)
                 with col_d1:
                     st.markdown(f"#### 👨‍🏫 HOD & Leadership: {dept.branch_name}")
                     st.write(f"**Head of Department:** {dept.hod_name or 'Dr. Department Chair'}")
-                    st.quote(dept.hod_statement or 'Committed to rigorous engineering and computational problem solving.')
+                    st.info(dept.hod_statement or 'Committed to rigorous engineering and computational problem solving.')
                     st.markdown(f"**Approved Intake:** {dept.intake} Seats | **Research Labs:** {dept.labs_count}")
                     st.markdown(f"**Sponsored Research Grants:** ₹{dept.funded_grants_lakhs} Lakhs | **Patents Filed:** {dept.patents_filed}")
 
@@ -204,6 +203,7 @@ def render_leadership_view(current_role: UserRole):
                 st.info("No admission leads recorded in the CRM yet.")
             else:
                 lead_data = [{
+                    "Lead ID": l.id,
                     "Student Name": l.student_name,
                     "Parent Name": l.parent_name,
                     "Email": l.contact_email,
@@ -217,6 +217,17 @@ def render_leadership_view(current_role: UserRole):
                     "Notes": l.query_notes
                 } for l in leads]
                 st.dataframe(pd.DataFrame(lead_data), use_container_width=True)
+
+                st.markdown("### ⚙️ Quick Lead Status Update")
+                selected_lead_id = st.selectbox("Select Lead ID to Update", [l.id for l in leads])
+                new_status = st.selectbox("New Pipeline Status", ["New", "Contacted", "Verified", "Enrolled"])
+                if st.button("Update Lead Status", type="primary"):
+                    lead_to_update = db.query(AdmissionLead).filter(AdmissionLead.id == selected_lead_id).first()
+                    if lead_to_update:
+                        lead_to_update.status = new_status
+                        db.commit()
+                        st.success(f"Lead status updated to **{new_status}** successfully!")
+                        st.rerun()
 
     # -------------------------------------------------------------------------
     # TAB 4: NAAC & NBA REGULATORY DOSSIERS
@@ -243,11 +254,19 @@ def render_leadership_view(current_role: UserRole):
         with col_r2:
             st.markdown("#### 🎯 NBA Tier-1 OBE Outcome Attainment")
             nba_df = pd.DataFrame([
-                {"Program Outcome", "Threshold", "Attainment Level"},
-                {"PO1: Engineering Knowledge", "75%", "88.5%"},
-                {"PO2: Problem Analysis", "75%", "82.0%"},
-                {"PO3: Design / Development", "70%", "79.4%"},
-                {"PO4: Investigations", "70%", "81.2%"},
-                {"PO12: Life-Long Learning", "80%", "91.0%"},
+                {"Program Outcome": "PO1: Engineering Knowledge", "Threshold": "75%", "Attainment Level": "88.5%"},
+                {"Program Outcome": "PO2: Problem Analysis", "Threshold": "75%", "Attainment Level": "82.0%"},
+                {"Program Outcome": "PO3: Design / Development", "Threshold": "70%", "Attainment Level": "79.4%"},
+                {"Program Outcome": "PO4: Investigations", "Threshold": "70%", "Attainment Level": "81.2%"},
+                {"Program Outcome": "PO12: Life-Long Learning", "Threshold": "80%", "Attainment Level": "91.0%"},
             ])
             st.dataframe(nba_df, use_container_width=True)
+
+        st.markdown("---")
+        st.download_button(
+            "📥 Export NAAC & NBA Compliance Summary Report (CSV)",
+            data=naac_df.to_csv(index=False).encode('utf-8'),
+            file_name="NAAC_NBA_Compliance_Report_2026.csv",
+            mime="text/csv"
+        )
+        
