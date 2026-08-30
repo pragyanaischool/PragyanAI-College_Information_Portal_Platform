@@ -121,7 +121,7 @@ def render_welcome_dashboard(active_role: UserRole):
             """
         )
 
-    # Embed Live College Directory Search & Filters safely via dynamic importlib (avoiding numeric filename import errors)
+    # Embed Live College Directory Search & Filters safely via dynamic importlib
     try:
         dir_module = importlib.import_module("src.ui.views.16_College_Search_Directory")
         st.markdown("### 🔍 Filter Colleges by State, District, City & Type")
@@ -170,7 +170,7 @@ def main():
     # STRICT Persona-Based Navigation Menus
     if active_role in [UserRole.ADMIN, UserRole.LEADERSHIP]:
         view_options = [
-            "1 Welcome Dashboard",
+            "1. Welcome Dashboard",
             "2 Admin College Master Editor",
             "3 Dean & Leadership Governance",
             "4 College Master Hub & Showcase",
@@ -180,7 +180,7 @@ def main():
         ]
     elif active_role == UserRole.RECRUITER:
         view_options = [
-            "1 Welcome Dashboard",
+            "1. Welcome Dashboard",
             "2 Institutional Analytics & Comparative Reporting",
             "3 Recruiter Placement RAG Advisor",
             "4 College Master Hub & Showcase",
@@ -188,18 +188,20 @@ def main():
         ]
     elif active_role == UserRole.SCHOOL_PARTNER:
         view_options = [
-            "1 Welcome Dashboard",
+            "1. Welcome Dashboard",
             "2 High School & PU Partner Desk",
             "3 School RAG Analytics & Sentiments",
         ]
-    else:  # Student / Aspirant / Guest
+    else:  # Student / Aspirant / Guest (Ordered explicitly per user specification)
         view_options = [
-            "1 Welcome Dashboard",
-            "2 AI Decision Hub & Aspirant Desk",
-            "3 College Search & Advanced Directory",
-            "4 Student College Deep-Dive",
-            "5 Admission RAG Advisory Chat",
-            "6 College Master Hub & Showcase",
+            "1. Welcome Dashboard",
+            "2. AI Decision Hub & Aspirant Desk",
+            "5. College Search & Advanced Directory",
+            "6. Student College Deep-Dive",
+            "3. Aspirant Knowledge Bank",
+            "7. Student Vision & Ask AI Assistant",
+            "8 Admission RAG Advisory Chat",
+            "4.  College Master Hub & Showcase",
         ]
 
     view_selection = st.sidebar.radio(
@@ -210,7 +212,7 @@ def main():
 
     # Dynamic Persona & Navigation View Routing (fully safe against numeric filenames)
     try:
-        if "Welcome Dashboard" in view_selection:
+        if "1. Welcome Dashboard" in view_selection:
             render_welcome_dashboard(active_role)
 
         elif "Admin College Master Editor" in view_selection:
@@ -220,31 +222,39 @@ def main():
                 view_module = importlib.import_module("src.ui.views.admin_college_editor")
             view_module.render_admin_college_editor_view()
 
-        elif "AI Decision Hub & Aspirant Desk" in view_selection:
+        elif "2. AI Decision Hub & Aspirant Desk" in view_selection:
             view_module = importlib.import_module("src.ui.views.1_Aspirant_Desk")
             view_module.render_aspirant_view()
 
-        elif "College Search & Advanced Directory" in view_selection:
+        elif "5. College Search & Advanced Directory" in view_selection:
             try:
                 view_module = importlib.import_module("src.ui.views.16_College_Search_Directory")
             except ModuleNotFoundError:
                 view_module = importlib.import_module("src.ui.views.college_search_directory")
             view_module.render_college_search_directory_view()
 
-        elif "Student College Deep-Dive" in view_selection:
+        elif "6. Student College Deep-Dive" in view_selection:
             try:
                 view_module = importlib.import_module("src.ui.views.15_Student_College_Deep_Dive")
             except ModuleNotFoundError:
                 view_module = importlib.import_module("src.ui.views.student_college_deep_dive")
             view_module.render_student_college_deep_dive_view()
 
-        elif "College Deep-Dive" in view_selection:
-            view_module = importlib.import_module("src.ui.views.10_College_Deep_Dive_Profile")
-            view_module.render_college_deep_dive_view()
+        elif "3. Aspirant Knowledge Bank" in view_selection:
+            view_module = importlib.import_module("src.ui.views.knowledge_bank")
+            view_module.render_knowledge_bank_view()
 
-        elif "Admission RAG Advisory" in view_selection:
+        elif "7. Student Vision & Ask AI Assistant" in view_selection:
+            view_module = importlib.import_module("src.ui.views.student_vision_rag")
+            view_module.render_student_vision_rag_view()
+
+        elif "8 Admission RAG Advisory Chat" in view_selection:
             view_module = importlib.import_module("src.ui.views.11_Admission_RAG_Advisor")
             view_module.render_admission_rag_advisor_view()
+
+        elif "4.  College Master Hub & Showcase" in view_selection:
+            view_module = importlib.import_module("src.ui.views.6_College_Master_Hub")
+            view_module.render_college_master_hub_view()
 
         elif "High School & PU Partner Desk" in view_selection:
             view_module = importlib.import_module("src.ui.views.2_School_Partner")
@@ -253,10 +263,6 @@ def main():
         elif "School RAG Analytics" in view_selection:
             view_module = importlib.import_module("src.ui.views.9_School_RAG_Analytics")
             view_module.render_school_rag_analytics_view()
-
-        elif "College Master Hub" in view_selection:
-            view_module = importlib.import_module("src.ui.views.6_College_Master_Hub")
-            view_module.render_college_master_hub_view()
 
         elif "Institutional Analytics" in view_selection:
             view_module = importlib.import_module("src.ui.views.5_Analytics_Reporting_View")
@@ -286,10 +292,6 @@ def main():
             view_module = importlib.import_module("src.ui.views.13_Recruiter_RAG_Advisor")
             view_module.render_recruiter_rag_advisor_view()
 
-        elif "Institutional Analytics & Comparative Reporting" in view_selection or "Institutional Analytics" in view_selection:
-            view_module = importlib.import_module("src.ui.views.5_Analytics_Reporting_View")
-            view_module.render_analytics_reporting_view(active_role)
-            
         else:
             view_module = importlib.import_module("src.ui.views.1_Aspirant_Desk")
             view_module.render_aspirant_view()
