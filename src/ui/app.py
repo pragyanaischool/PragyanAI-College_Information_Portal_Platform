@@ -205,7 +205,7 @@ def main():
 
         elif "2. Institutional Analytics & Comparative Analytics" in view_selection:
             try:
-                view_module = importlib.import_module("src.ui.views.3_💼_Recruiter_Desk")
+                view_module = importlib.import_module("src.ui.views.3_Recruiter_Desk")
             except ModuleNotFoundError:
                 view_module = importlib.import_module("src.ui.views.recruiter_desk")
             view_module.render_recruiter_view()
