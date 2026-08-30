@@ -77,7 +77,7 @@ def render_student_college_deep_dive_view():
         h_aids = db_record.hod_aids or "Dr. Sunita Murthy (Ph.D. IITM)"
         h_ece = db_record.hod_ece or "Dr. V. K. Hebbar (Ph.D. NITK)"
         
-        data_source_badge = " **Data Source:** Verified Live Record Published in Central Database"
+        data_source_badge = "🟢 **Data Source:** Verified Live Record Published in Central Database"
     else:
         # Professional Filler / Placeholder Data
         c_name = selected_college_name
@@ -96,24 +96,24 @@ def render_student_college_deep_dive_view():
         h_aids = "Dr. Department Head (AI & DS Filler)"
         h_ece = "Dr. Department Head (ECE Filler)"
         
-        data_source_badge = " **Data Source:** Default Filler Data (Institution profile pending database publish)"
+        data_source_badge = "🟡 **Data Source:** Default Filler Data (Institution profile pending database publish)"
 
     st.markdown(data_source_badge)
-    st.markdown(f"##  Aspirant Audit Dossier: `{c_name}`")
+    st.markdown(f"## 🏫 Aspirant Audit Dossier: `{c_name}`")
 
     # 4. Structured Tabs for the Student Deep-Dive View
     t_overview, t_accred, t_principal, t_hod = st.tabs([
-        "1. Overview & Quick Facts",
-        "2. Accreditations & Rankings",
-        "3. Principal & Leadership Statement",
-        "4. Department HOD Profiles"
+        "📋 Overview & Quick Facts",
+        "🎖️ Accreditations & Rankings",
+        "👔 Principal & Leadership Statement",
+        "👥 Department HOD Profiles"
     ])
 
     # -------------------------------------------------------------------------
     # TAB 1: OVERVIEW & QUICK FACTS
     # -------------------------------------------------------------------------
     with t_overview:
-        st.subheader(" Overview & Quick Facts")
+        st.subheader("📋 Overview & Quick Facts")
         st.markdown(f"Essential telemetry and placement metrics for **{c_name}**.")
 
         c1, c2, c3, c4 = st.columns(4)
@@ -127,7 +127,7 @@ def render_student_college_deep_dive_view():
             st.metric("NIRF National Rank", f"Rank #{c_nirf}")
 
         st.markdown("---")
-        st.markdown("####  Campus Highlights & Infrastructure")
+        st.markdown("#### 🏛️ Campus Highlights & Infrastructure")
         st.markdown(
             f"- **Location:** {c_city}\n"
             "- **Research Labs:** NVIDIA high-compute GPU clusters, IoT testbeds, and VLSI design centers.\n"
@@ -139,7 +139,7 @@ def render_student_college_deep_dive_view():
     # TAB 2: ACCREDITATIONS & RANKINGS
     # -------------------------------------------------------------------------
     with t_accred:
-        st.subheader(" Accreditations & Rankings")
+        st.subheader("🎖️ Accreditations & Rankings")
         st.markdown("Official board accreditations, statutory approvals, and national rankings.")
 
         accred_table = [
@@ -160,10 +160,10 @@ def render_student_college_deep_dive_view():
             > *"{p_stmt}"*
             
             — **{p_name}, Principal & Executive Director**
-            " " " """
+            """
         )
         st.markdown("---")
-        st.markdown("####  Institutional Strategic Vision")
+        st.markdown("#### 🎯 Institutional Strategic Vision")
         st.markdown(f"- **Core Mission:** {i_vision}")
         st.markdown("- **Holistic Growth:** Emphasizing soft skills, research paper publications, and global internships.")
         st.markdown("- **Industry Integration:** Regular guest lectures and curriculum advisory boards featuring corporate leaders.")
@@ -182,7 +182,7 @@ def render_student_college_deep_dive_view():
         ]
 
         for hod in hod_data:
-            with st.expander(f" {hod['Department']} — Head: {hod['Head']}"):
+            with st.expander(f"📌 {hod['Department']} — Head: {hod['Head']}"):
                 st.markdown(f"**Specialization & Research Focus:** {hod['Focus']}")
                 st.markdown(
                     f"*"
