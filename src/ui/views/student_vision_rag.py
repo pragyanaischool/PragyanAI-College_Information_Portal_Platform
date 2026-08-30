@@ -144,7 +144,8 @@ def render_student_vision_rag_view():
     st.subheader("💬 Ask AI Questions & Contextual RAG Model")
     st.markdown("Ask any question regarding admissions, fee brackets, cutoff rankings, or college policies. The RAG engine will query both database records and uploaded documents instantly.")
 
-    render_multimodal_chat()
+    # Render Multimodal Chat with a unique key to prevent duplicate widget ID crashes
+    render_multimodal_chat(key="student_vision_rag_chat_input")
 
 
 if __name__ == "__main__":
