@@ -1,5 +1,6 @@
 """
 src/db/models.py
+
 SQLAlchemy ORM Data Schema for PragyanAI College Intelligence Hub.
 Provides relational mappings for institutional governance, department accreditation,
 faculty research profiles, cutoffs, student records, event management, and candidate multi-test profiles.
