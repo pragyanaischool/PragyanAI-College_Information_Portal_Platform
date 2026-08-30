@@ -3,13 +3,13 @@ src/ui/views/1_🎓_Aspirant_Desk.py
 
 Student and Parent Aspirant Journey:
 - Guided 7-Step Progress Pipeline Indicator
-- Step 1:  Multi-Test Score & Rank Profiler (KCET, COMEDK, JEE, Boards & Scorecard PDF OCR)
-- Step 2: Cutoff Profiler, City/Affiliation Types & Top Recommendations (+ 4-Year Educational ROI)
-- Step 3: Side-by-Side College Comparison (Select from Recommended Matches)
-- Step 4: Institutional Knowledge Directory, Verified Direct Portals & PDF Downloads
-- Step 5: Voice of Stakeholders (Alumni, Students, Recruiters, Principal & HOD Quotes/Bites)
-- Step 6: Aspirant Knowledge Bank (Statutory Accreditations: NAAC, NBA, NIRF & 7 Key Selection Pillars)
-- Step 7: Student Vision & Document RAG Assistant (College Document Hub & Ask AI)
+- Step 1: 📝 Multi-Test Score & Rank Profiler (KCET, COMEDK, JEE, Boards & Scorecard PDF OCR)
+- Step 2: 🎯 Cutoff Profiler, City/Affiliation Types & Top Recommendations (+ 4-Year Educational ROI)
+- Step 3: ⚖️ Side-by-Side College Comparison (Select from Recommended Matches)
+- Step 4: 🏛️ Institutional Knowledge Directory, Verified Direct Portals & PDF Downloads
+- Step 5: 🗣️ Voice of Stakeholders (Alumni, Students, Recruiters, Principal & HOD Quotes/Bites)
+- Step 6: 🧠 Aspirant Knowledge Bank (Statutory Accreditations: NAAC, NBA, NIRF & 7 Key Selection Pillars)
+- Step 7: 👁️ Student Vision & Document RAG Assistant (College Document Hub & Ask AI)
 - Dedicated Counseling Desk: ✍️ Direct Admission Inquiry & Multi-Institution Selection
 - Multimodal Voice-Enabled College AI Assistant
 """
@@ -140,15 +140,15 @@ def render_aspirant_view():
     # Tab Workspace Menu (7 Steps + Direct Counseling + AI Assistant)
     # -------------------------------------------------------------------------
     tab_step1, tab_step2, tab_step3, tab_step4, tab_step5, tab_step6, tab_step7, tab_lead, tab_ai = st.tabs([
-        " Step 1: Score Profiler",
-        " Step 2: Recommendations & ROI",
-        " Step 3: Compare Colleges",
-        " Step 4: Official Portals & PDFs",
-        " Step 5: Stakeholder Voices",
-        " Step 6: Knowledge Bank",
-        " Step 7: Student Vision & AI",
-        " Direct Counseling & Quota Lock",
-        " Voice & Multimodal AI Guide",
+        "📝 Step 1: Score Profiler",
+        "🎯 Step 2: Recommendations & ROI",
+        "⚖️ Step 3: Compare Colleges",
+        "🏛️ Step 4: Official Portals & PDFs",
+        "🗣️ Step 5: Stakeholder Voices",
+        "🧠 Step 6: Knowledge Bank",
+        "👁️ Step 7: Student Vision & AI",
+        "✍️ Direct Counseling & Quota Lock",
+        "🤖 Voice & Multimodal AI Guide",
     ])
 
     # -------------------------------------------------------------------------
@@ -160,7 +160,7 @@ def render_aspirant_view():
         render_step1_score_input()
 
         # Optional Scorecard OCR / Text Extraction Card
-        with st.expander(" Or upload your KCET / COMEDK Scorecard PDF for instant auto-read:", expanded=False):
+        with st.expander("📄 Or upload your KCET / COMEDK Scorecard PDF for instant auto-read:", expanded=False):
             uploaded_scorecard = st.file_uploader(
                 "Upload Scorecard (PDF):",
                 type=["pdf"],
@@ -238,7 +238,7 @@ def render_aspirant_view():
         render_step4_knowledge_directory()
 
         st.markdown("---")
-        st.subheader(" Official Brochures, Fee Matrix & Campus Discovery")
+        st.subheader("📥 Official Brochures, Fee Matrix & Campus Discovery")
         st.caption("Download institutional brochures and view virtual walkthroughs of Centers of Excellence.")
 
         col_docs, col_video = st.columns([1, 1])
@@ -251,11 +251,11 @@ def render_aspirant_view():
             generate_raw_documents()
 
         with col_docs:
-            st.markdown("####  Verified Institutional Publications")
+            st.markdown("#### 📄 Verified Institutional Publications")
             if flyer_path.exists():
                 with open(flyer_path, "rb") as f_brochure:
                     st.download_button(
-                        " Download Management Quota Fee Flyer (PDF)",
+                        "📄 Download Management Quota Fee Flyer (PDF)",
                         data=f_brochure.read(),
                         file_name="Management_Fee_Structure_2026.pdf",
                         mime="application/pdf",
@@ -265,7 +265,7 @@ def render_aspirant_view():
             if roi_path.exists():
                 with open(roi_path, "rb") as f_roi:
                     st.download_button(
-                        " Download 4-Year Salary ROI Report (PDF)",
+                        "📈 Download 4-Year Salary ROI Report (PDF)",
                         data=f_roi.read(),
                         file_name="Placement_ROI_Report_2026.pdf",
                         mime="application/pdf",
@@ -273,12 +273,12 @@ def render_aspirant_view():
                     )
 
             st.info(
-                " **Merit Concession Note:** Top 2,000 KCET & Top 1,500 COMEDK rank holders "
+                "💡 **Merit Concession Note:** Top 2,000 KCET & Top 1,500 COMEDK rank holders "
                 "qualify for up to a 50% tuition scholarship under institutional quotas."
             )
 
         with col_video:
-            st.markdown("####  Virtual Labs & Campus Discovery Tour")
+            st.markdown("#### 🎥 Virtual Labs & Campus Discovery Tour")
             st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
         col_nav_prev4, col_nav_next4 = st.columns([1, 1])
@@ -345,7 +345,7 @@ def render_aspirant_view():
     # TAB 8: Direct Counseling & Admission Lead Form
     # -------------------------------------------------------------------------
     with tab_lead:
-        st.subheader(" Lock In Direct Admission & Counseling Support")
+        st.subheader("✍️ Lock In Direct Admission & Counseling Support")
         st.caption("Connect directly with the college admissions directorates for multi-institution seat allocation, scholarships, and fee concessions.")
 
         with st.form("aspirant_guided_lead_form"):
@@ -386,7 +386,7 @@ def render_aspirant_view():
             )
 
             submit_inquiry = st.form_submit_button(
-                " Submit Inquiry & Request Direct Callback",
+                "🚀 Submit Inquiry & Request Direct Callback",
                 type="primary",
                 use_container_width=True,
             )
@@ -411,7 +411,7 @@ def render_aspirant_view():
                                     "intent_score": 5 if "Management" in adm_type else 3,
                                     "query_notes": notes,
                                 })
-                        st.success(f" Admission inquiries for {len(target_colleges)} selected institution(s) have been successfully logged! The Admissions Directorate will contact you shortly.")
+                        st.success(f"🎉 Admission inquiries for {len(target_colleges)} selected institution(s) have been successfully logged! The Admissions Directorate will contact you shortly.")
                     except Exception as err:
                         st.error(f"Error submitting inquiry: {err}")
 
