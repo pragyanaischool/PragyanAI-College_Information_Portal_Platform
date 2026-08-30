@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 import pandas as pd
 from sqlalchemy import desc, func, or_
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 
 from src.db.models import (
     AdmissionLead,
@@ -33,7 +33,7 @@ class CollegeRepository:
         self.db = db
 
     # =========================================================================
-    # 1. COLLEGE QUERIES (Safe Dictionary Serialization)
+    # 1. COLLEGE QUERIES (Safe Dict Extraction)
     # =========================================================================
 
     def get_all_colleges(self) -> List[Dict[str, Any]]:
@@ -51,7 +51,7 @@ class CollegeRepository:
                 "city": getattr(c, "city", "Bengaluru") or "Bengaluru",
                 "address": getattr(c, "address", "") or "",
                 "established_year": getattr(c, "established_year", 1960) or 1960,
-                "autonomous": getattr(c, "autonomous", True),
+                "autonomous": bool(getattr(c, "autonomous", True)),
                 "naac_grade": getattr(c, "naac_grade", "A") or "A",
                 "naac_cgpa": float(getattr(c, "naac_cgpa", 3.0) or 3.0),
                 "nba_accredited_programs": int(getattr(c, "nba_accredited_programs", 0) or 0),
@@ -73,7 +73,7 @@ class CollegeRepository:
         return result
 
     def get_college_by_code(self, college_code: str) -> Optional[Dict[str, Any]]:
-        """Fetches a single college record as a dictionary."""
+        """Fetches a single college record as a standalone dictionary."""
         if not college_code:
             return None
         c = self.db.query(College).filter(College.code == college_code.upper().strip()).first()
@@ -89,7 +89,7 @@ class CollegeRepository:
             "city": getattr(c, "city", "Bengaluru") or "Bengaluru",
             "address": getattr(c, "address", "") or "",
             "established_year": getattr(c, "established_year", 1960) or 1960,
-            "autonomous": getattr(c, "autonomous", True),
+            "autonomous": bool(getattr(c, "autonomous", True)),
             "naac_grade": getattr(c, "naac_grade", "A") or "A",
             "naac_cgpa": float(getattr(c, "naac_cgpa", 3.0) or 3.0),
             "nba_accredited_programs": int(getattr(c, "nba_accredited_programs", 0) or 0),
@@ -451,7 +451,7 @@ class CollegeRepository:
         if not prof:
             return None
         return {
-            "id": prof.id,
+            "id": str(prof.id),
             "session_id": prof.session_id,
             "kcet_rank": prof.kcet_rank,
             "kcet_marks": prof.kcet_marks,
@@ -506,3 +506,4 @@ class CollegeRepository:
             }
             for f in faculties
         ]
+        
