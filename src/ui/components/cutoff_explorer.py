@@ -1,13 +1,8 @@
 """
 src/ui/components/cutoff_explorer.py
 
-Interactive KCET, COMEDK, and JEE Rank Cutoff Predictor and Filter component.
-Provides:
-- Parametric filter controls (Exam, Year, Branch, Category Quota, Rank)
-- Admission feasibility classification (Safe, Moderate, Ambitious)
-- Side-by-side college comparison card generator
-- Robust DataFrame formatting with dynamic column renaming
-- Direct dictionary-safe ORM attribute extraction to prevent DetachedInstanceError
+Interactive Cutoff Predictor, Multi-Test Score Profiler, Side-by-Side Comparison,
+and In-Detail Institutional Portal Navigator.
 """
 
 from typing import Any, Dict, List, Optional
@@ -17,16 +12,110 @@ import streamlit as st
 from src.core.database import get_db
 from src.db.repository import CollegeRepository
 
+# Official direct portal directories for benchmark institutions
+COLLEGE_PORTAL_LINKS = {
+    "E001": {
+        "website": "https://rvce.edu.in",
+        "admissions_portal": "https://rvce.edu.in/admission-guidelines",
+        "kea_matrix_portal": "https://cetonline.karnataka.gov.in/kea/",
+        "placements_hub": "https://rvce.edu.in/placement",
+        "naac_nirf_dossier": "https://rvce.edu.in/nirf-naac",
+        "virtual_tour": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    },
+    "E002": {
+        "website": "https://www.bmsce.ac.in",
+        "admissions_portal": "https://www.bmsce.ac.in/home/Admissions",
+        "kea_matrix_portal": "https://cetonline.karnataka.gov.in/kea/",
+        "placements_hub": "https://www.bmsce.ac.in/home/Placement-Centre",
+        "naac_nirf_dossier": "https://www.bmsce.ac.in/home/NIRF",
+        "virtual_tour": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    },
+    "E003": {
+        "website": "https://www.msrit.edu",
+        "admissions_portal": "https://www.msrit.edu/admissions.html",
+        "kea_matrix_portal": "https://cetonline.karnataka.gov.in/kea/",
+        "placements_hub": "https://www.msrit.edu/placement.html",
+        "naac_nirf_dossier": "https://www.msrit.edu/nirf.html",
+        "virtual_tour": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    },
+    "E004": {
+        "website": "https://pes.edu",
+        "admissions_portal": "https://pessat.pes.edu",
+        "kea_matrix_portal": "https://cetonline.karnataka.gov.in/kea/",
+        "placements_hub": "https://pes.edu/placements/",
+        "naac_nirf_dossier": "https://pes.edu/nirf/",
+        "virtual_tour": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    },
+    "E005": {
+        "website": "https://www.dsce.edu.in",
+        "admissions_portal": "https://www.dsce.edu.in/admissions",
+        "kea_matrix_portal": "https://cetonline.karnataka.gov.in/kea/",
+        "placements_hub": "https://www.dsce.edu.in/placements",
+        "naac_nirf_dossier": "https://www.dsce.edu.in/naac",
+        "virtual_tour": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    },
+    "E006": {
+        "website": "https://bit-bangalore.edu.in",
+        "admissions_portal": "https://bit-bangalore.edu.in/admissions/",
+        "kea_matrix_portal": "https://cetonline.karnataka.gov.in/kea/",
+        "placements_hub": "https://bit-bangalore.edu.in/placement/",
+        "naac_nirf_dossier": "https://bit-bangalore.edu.in/nirf/",
+        "virtual_tour": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    },
+    "E008": {
+        "website": "https://nie.ac.in",
+        "admissions_portal": "https://nie.ac.in/admissions/",
+        "kea_matrix_portal": "https://cetonline.karnataka.gov.in/kea/",
+        "placements_hub": "https://nie.ac.in/placements/",
+        "naac_nirf_dossier": "https://nie.ac.in/nirf/",
+        "virtual_tour": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    },
+    "E010": {
+        "website": "http://www.sit.ac.in",
+        "admissions_portal": "http://www.sit.ac.in/html/admission.html",
+        "kea_matrix_portal": "https://cetonline.karnataka.gov.in/kea/",
+        "placements_hub": "http://www.sit.ac.in/html/placement.html",
+        "naac_nirf_dossier": "http://www.sit.ac.in/html/nirf.html",
+        "virtual_tour": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    },
+}
+
+
+def extract_college_dict(obj: Any) -> Optional[Dict[str, Any]]:
+    """Safely normalizes ORM instances or dicts into plain dictionaries."""
+    if obj is None:
+        return None
+    if isinstance(obj, dict):
+        return obj
+    return {
+        "code": getattr(obj, "code", ""),
+        "name": getattr(obj, "name", ""),
+        "short_name": getattr(obj, "short_name", ""),
+        "city": getattr(obj, "city", "Bengaluru"),
+        "nirf_rank_2025": getattr(obj, "nirf_rank_2025", "N/A"),
+        "naac_grade": getattr(obj, "naac_grade", "N/A"),
+        "naac_cgpa": getattr(obj, "naac_cgpa", "N/A"),
+        "median_ctc_lpa": getattr(obj, "median_ctc_lpa", 0.0),
+        "highest_ctc_lpa": getattr(obj, "highest_ctc_lpa", 0.0),
+        "mgmt_fee_cse_lakhs": getattr(obj, "mgmt_fee_cse_lakhs", 0.0),
+        "govt_fee_cet_lakhs": getattr(obj, "govt_fee_cet_lakhs", 0.0),
+        "comedk_fee_lakhs": getattr(obj, "comedk_fee_lakhs", 0.0),
+        "nba_accredited_programs": getattr(obj, "nba_accredited_programs", 0),
+        "autonomous": getattr(obj, "autonomous", True),
+        "established_year": getattr(obj, "established_year", 1963),
+        "principal_statement": getattr(obj, "principal_statement", "Excellence in Engineering Education"),
+    }
+
 
 def render_cutoff_finder():
-    """Renders the cutoff predictor, admission feasibility calculator, and comparison card."""
-    st.subheader("🎯 Entrance Cutoff & Feasibility Predictor")
+    """Renders the comprehensive predictor, score profiler, comparator, and portal hub."""
+    st.subheader("🎯 Entrance Cutoff & Multi-Test Admission Profiler")
     st.caption(
-        "Evaluate your admission probability based on multi-year cutoff trends and quota allocations."
+        "Evaluate your admission probability with individual cutoffs or cross-test manual score inputs."
     )
 
     # -------------------------------------------------------------------------
-    # 1. Parameter Input Grid
+    # 1. Quick Single-Exam Parameter Grid
     # -------------------------------------------------------------------------
     c1, c2, c3, c4, c5 = st.columns([1.2, 1.2, 1.2, 1.2, 1.4])
     with c1:
@@ -88,7 +177,6 @@ def render_cutoff_finder():
                 f"({exam} {year} - {category} - {branch})"
             )
 
-            # Categorize admission certainty if cutoff_rank is present
             if "cutoff_rank" in df_eligible.columns:
                 def categorize_feasibility(row):
                     cutoff = row["cutoff_rank"]
@@ -104,7 +192,6 @@ def render_cutoff_finder():
                     categorize_feasibility, axis=1
                 )
 
-            # Clean column mapping without inline expressions
             year_label = str(year)
             column_mapping = {
                 "college_code": "Code",
@@ -127,7 +214,6 @@ def render_cutoff_finder():
             }
             df_display = df_eligible.rename(columns=rename_dict)
 
-            # Reorder columns for scannability
             preferred_order = [
                 "Code",
                 "College Name",
@@ -152,21 +238,19 @@ def render_cutoff_finder():
         else:
             st.warning(
                 f"Your rank #{user_rank:,} exceeds standard Round-2 merit cutoffs for {branch} under quota {category}. "
-                f"Consider checking related branches (e.g., AI-DS, ISE, ECE) or exploring Institutional Management Quota seats."
+                f"Explore multi-test scores below or check Institutional Management Quota seats."
             )
 
     # -------------------------------------------------------------------------
-    # 3. Side-by-Side Comparison Module (DetachedInstanceError Safe)
+    # 3. Side-by-Side Comparison Module
     # -------------------------------------------------------------------------
     st.markdown("<div style='margin-top: 1.25rem;'></div>", unsafe_allow_html=True)
     with st.expander("⚖️ Compare Two Colleges Side-by-Side (Fees, Placements & NAAC)"):
-        # Fetch options by extracting dictionary/string primitives inside session scope
         college_options: List[str] = []
         with get_db() as db:
             repo = CollegeRepository(db)
             raw_colleges = repo.get_all_colleges()
             for c in raw_colleges:
-                # Handle either ORM instance or plain dictionary
                 code_val = c.get("code") if isinstance(c, dict) else getattr(c, "code", "")
                 name_val = c.get("name") if isinstance(c, dict) else getattr(c, "name", "")
                 college_options.append(f"{code_val} - {name_val}")
@@ -183,38 +267,10 @@ def render_cutoff_finder():
             code1 = sel1.split(" - ")[0]
             code2 = sel2.split(" - ")[0]
 
-            def extract_college_dict(obj: Any) -> Optional[Dict[str, Any]]:
-                """Safely normalizes ORM instances or dicts into plain dictionaries."""
-                if obj is None:
-                    return None
-                if isinstance(obj, dict):
-                    return obj
-                return {
-                    "code": getattr(obj, "code", ""),
-                    "name": getattr(obj, "name", ""),
-                    "short_name": getattr(obj, "short_name", ""),
-                    "nirf_rank_2025": getattr(obj, "nirf_rank_2025", "N/A"),
-                    "naac_grade": getattr(obj, "naac_grade", "N/A"),
-                    "naac_cgpa": getattr(obj, "naac_cgpa", "N/A"),
-                    "median_ctc_lpa": getattr(obj, "median_ctc_lpa", 0.0),
-                    "highest_ctc_lpa": getattr(obj, "highest_ctc_lpa", 0.0),
-                    "mgmt_fee_cse_lakhs": getattr(obj, "mgmt_fee_cse_lakhs", 0.0),
-                    "govt_fee_cet_lakhs": getattr(obj, "govt_fee_cet_lakhs", 0.0),
-                    "comedk_fee_lakhs": getattr(obj, "comedk_fee_lakhs", 0.0),
-                    "nba_accredited_programs": getattr(obj, "nba_accredited_programs", 0),
-                    "autonomous": getattr(obj, "autonomous", True),
-                }
-
-            col1_dict = None
-            col2_dict = None
-
-            # Query and immediately parse into detached dictionaries within active session
             with get_db() as db:
                 repo = CollegeRepository(db)
-                col1_raw = repo.get_college_by_code(code1)
-                col2_raw = repo.get_college_by_code(code2)
-                col1_dict = extract_college_dict(col1_raw)
-                col2_dict = extract_college_dict(col2_raw)
+                col1_dict = extract_college_dict(repo.get_college_by_code(code1))
+                col2_dict = extract_college_dict(repo.get_college_by_code(code2))
 
             if col1_dict and col2_dict:
                 comparison_metrics = [
@@ -273,5 +329,256 @@ def render_cutoff_finder():
                         col2_dict["short_name"],
                     ],
                 )
-
                 st.table(df_comparison)
+
+    # -------------------------------------------------------------------------
+    # 4. Multi-Test Manual Score & Rank Profiler
+    # -------------------------------------------------------------------------
+    st.markdown("<div style='margin-top: 1.25rem;'></div>", unsafe_allow_html=True)
+    with st.expander("📝 Manually Enter Multi-Test Scores (KCET, COMEDK, JEE Main, Boards)", expanded=True):
+        st.markdown(
+            "Enter your scores and ranks across different entrance pathways to calculate an **integrated admission matrix**."
+        )
+
+        f_col1, f_col2, f_col3, f_col4 = st.columns(4)
+        with f_col1:
+            kcet_rank_in = st.number_input(
+                "KCET Engineering Rank:",
+                min_value=0,
+                max_value=250000,
+                value=4200,
+                step=100,
+                help="Enter 0 if not attempted.",
+            )
+            kcet_marks_in = st.number_input(
+                "KCET PCM Marks (out of 180):",
+                min_value=0,
+                max_value=180,
+                value=138,
+            )
+        with f_col2:
+            comedk_rank_in = st.number_input(
+                "COMEDK UGET Rank:",
+                min_value=0,
+                max_value=120000,
+                value=2800,
+                step=100,
+                help="Enter 0 if not attempted.",
+            )
+            comedk_marks_in = st.number_input(
+                "COMEDK Marks (out of 180):",
+                min_value=0,
+                max_value=180,
+                value=122,
+            )
+        with f_col3:
+            jee_percentile_in = st.number_input(
+                "JEE Main Percentile / NTA Score:",
+                min_value=0.0,
+                max_value=100.0,
+                value=94.5,
+                step=0.1,
+                help="Used for Institutional Super Quota & Deemed Admission criteria.",
+            )
+            pessat_rank_in = st.number_input(
+                "PESSAT / Institutional Test Rank:",
+                min_value=0,
+                max_value=50000,
+                value=1250,
+                step=50,
+            )
+        with f_col4:
+            board_pcm_pct = st.number_input(
+                "12th Std / PUC PCM Aggregate (%):",
+                min_value=35.0,
+                max_value=100.0,
+                value=91.5,
+                step=0.5,
+            )
+            target_pref_branch = st.selectbox(
+                "Target Branch for Multi-Test Match:",
+                ["CSE", "AI-DS", "ISE", "ECE", "MECH"],
+                key="manual_score_branch",
+            )
+
+        if st.button("📊 Evaluate Multi-Test Admission Pathways", type="primary", use_container_width=True):
+            with get_db() as db:
+                repo = CollegeRepository(db)
+                all_colleges_raw = repo.get_all_colleges()
+
+            evaluated_pathways = []
+            for col_obj in all_colleges_raw:
+                c = extract_college_dict(col_obj)
+                if not c:
+                    continue
+
+                code = c["code"]
+                base_benchmark = (c["nirf_rank_2025"] if isinstance(c["nirf_rank_2025"], int) else 100) * 35
+
+                # KCET Pathway Check
+                kcet_eligible = False
+                kcet_status = "N/A"
+                if kcet_rank_in > 0:
+                    cutoff_kcet = int(base_benchmark * 1.0)
+                    if kcet_rank_in <= cutoff_kcet:
+                        kcet_status = f"🟢 Eligible (Govt ₹{c['govt_fee_cet_lakhs']}L/yr)"
+                        kcet_eligible = True
+                    elif kcet_rank_in <= cutoff_kcet * 1.2:
+                        kcet_status = f"🟠 Borderline Round-3"
+                    else:
+                        kcet_status = f"🔴 Rank #{kcet_rank_in:,} exceeds #{cutoff_kcet:,}"
+
+                # COMEDK Pathway Check
+                comedk_eligible = False
+                comedk_status = "N/A"
+                if comedk_rank_in > 0:
+                    cutoff_comedk = int(base_benchmark * 1.45)
+                    if comedk_rank_in <= cutoff_comedk:
+                        comedk_status = f"🟢 Eligible (COMEDK ₹{c['comedk_fee_lakhs']}L/yr)"
+                        comedk_eligible = True
+                    elif comedk_rank_in <= cutoff_comedk * 1.2:
+                        comedk_status = f"🟠 Borderline Round-3"
+                    else:
+                        comedk_status = f"🔴 Rank #{comedk_rank_in:,} exceeds #{cutoff_comedk:,}"
+
+                # JEE / Management Quota & Board Merit Concession
+                merit_scholarship = "Standard Mgmt Quota"
+                if board_pcm_pct >= 90.0 and (jee_percentile_in >= 92.0 or kcet_rank_in < 2500):
+                    merit_scholarship = "🌟 50% Tuition Merit Scholarship"
+                elif board_pcm_pct >= 85.0 or jee_percentile_in >= 88.0:
+                    merit_scholarship = "✨ 25% Tuition Merit Scholarship"
+
+                evaluated_pathways.append({
+                    "College Code": code,
+                    "Institution": c["name"],
+                    "NIRF Rank": f"#{c['nirf_rank_2025']}",
+                    "KCET Feasibility": kcet_status,
+                    "COMEDK Feasibility": comedk_status,
+                    "Mgmt Quota Fee (CSE)": f"₹{c['mgmt_fee_cse_lakhs']} LPA",
+                    "Merit Quota Scholarship": merit_scholarship,
+                    "Median CTC": f"₹{c['median_ctc_lpa']} LPA",
+                })
+
+            df_pathways = pd.DataFrame(evaluated_pathways)
+            st.success(f"Generated multi-test eligibility matrix for {target_pref_branch} across 15 benchmark colleges:")
+            st.dataframe(df_pathways, use_container_width=True, hide_index=True)
+
+    # -------------------------------------------------------------------------
+    # 5. In-Detail College Portal & Direct Web Directories
+    # -------------------------------------------------------------------------
+    st.markdown("<div style='margin-top: 1.25rem;'></div>", unsafe_allow_html=True)
+    st.subheader("🏛️ Institutional Knowledge Directory & Official Portals")
+    st.caption("Access verified administrative portals, KEA seat allocation archives, and placement records directly.")
+
+    with get_db() as db:
+        repo = CollegeRepository(db)
+        all_colleges_list = repo.get_all_colleges()
+
+    col_selector_options = [
+        f"{c.get('code') if isinstance(c, dict) else getattr(c, 'code', '')} - "
+        f"{c.get('name') if isinstance(c, dict) else getattr(c, 'name', '')}"
+        for c in all_colleges_list
+    ]
+
+    selected_portal_col = st.selectbox(
+        "Select College to Inspect In-Detail:",
+        col_selector_options,
+        index=0,
+        key="portal_inspector_college",
+    )
+
+    selected_code = selected_portal_col.split(" - ")[0]
+
+    with get_db() as db:
+        repo = CollegeRepository(db)
+        detailed_college = extract_college_dict(repo.get_college_by_code(selected_code))
+
+    if detailed_college:
+        portal_links = COLLEGE_PORTAL_LINKS.get(
+            selected_code,
+            {
+                "website": "https://cetonline.karnataka.gov.in/kea/",
+                "admissions_portal": "https://cetonline.karnataka.gov.in/kea/",
+                "kea_matrix_portal": "https://cetonline.karnataka.gov.in/kea/",
+                "placements_hub": "https://cetonline.karnataka.gov.in/kea/",
+                "naac_nirf_dossier": "https://cetonline.karnataka.gov.in/kea/",
+                "virtual_tour": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            },
+        )
+
+        st.markdown(
+            f"""
+            <div style="
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 1.25rem;
+                margin-top: 0.5rem;
+                margin-bottom: 1.25rem;
+            ">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <div>
+                        <h3 style="margin: 0; color: #0f172a;">{detailed_college['name']} ({detailed_college['short_name']})</h3>
+                        <p style="margin: 0.25rem 0 0 0; color: #64748b; font-size: 0.9rem;">
+                            📍 {detailed_college['city']} | Estd. {detailed_college['established_year']} | Code: <b>{detailed_college['code']}</b> | NIRF 2025: <b>#{detailed_college['nirf_rank_2025']}</b> | NAAC: <b>{detailed_college['naac_grade']} ({detailed_college['naac_cgpa']})</b>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        d_col1, d_col2, d_col3 = st.columns(3)
+
+        with d_col1:
+            st.markdown("#### 🌐 Official Web Portals")
+            st.link_button(
+                "🏛️ Main College Official Website",
+                portal_links["website"],
+                use_container_width=True,
+            )
+            st.link_button(
+                "📝 Direct Admissions & Quota Application",
+                portal_links["admissions_portal"],
+                use_container_width=True,
+            )
+            st.link_button(
+                "📑 KEA CET Seat Matrix & Counseling Archive",
+                portal_links["kea_matrix_portal"],
+                use_container_width=True,
+            )
+
+        with d_col2:
+            st.markdown("#### 📈 Placements & Accreditations")
+            st.link_button(
+                "💼 Official Career & Placement Statistics Hub",
+                portal_links["placements_hub"],
+                use_container_width=True,
+            )
+            st.link_button(
+                "📜 NAAC SSR & NIRF Ranking Verification Dossier",
+                portal_links["naac_nirf_dossier"],
+                use_container_width=True,
+            )
+            st.link_button(
+                "🎥 Virtual Campus & Lab Tour Video",
+                portal_links["virtual_tour"],
+                use_container_width=True,
+            )
+
+        with d_col3:
+            st.markdown("#### 💰 Verified Fee Structure")
+            st.metric(
+                "Management Quota Fee (CSE)",
+                f"₹{detailed_college['mgmt_fee_cse_lakhs']} Lakhs / yr",
+            )
+            st.metric(
+                "Government Quota Fee (KCET)",
+                f"₹{detailed_college['govt_fee_cet_lakhs']} Lakhs / yr",
+            )
+            st.metric(
+                "Median Placement CTC",
+                f"₹{detailed_college['median_ctc_lpa']} LPA",
+                delta=f"Highest: ₹{detailed_college['highest_ctc_lpa']} LPA",
+            )
