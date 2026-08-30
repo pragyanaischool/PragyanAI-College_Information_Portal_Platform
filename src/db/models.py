@@ -6,8 +6,9 @@ Provides relational mappings for institutional governance, department accreditat
 faculty research profiles, cutoffs, student records, event management, and candidate multi-test profiles.
 """
 
+import logging
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import (
     Boolean,
     Column,
@@ -20,6 +21,8 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.orm import declarative_base, relationship
+
+logger = logging.getLogger(__name__)
 
 Base = declarative_base()
 
@@ -54,13 +57,14 @@ class College(Base):
     video_tour_url = Column(String(500))
     principal_statement = Column(Text)
     alumni_linkedin_hub = Column(String(500))
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     departments = relationship("Department", back_populates="college", cascade="all, delete-orphan")
     cutoffs = relationship("Cutoff", back_populates="college", cascade="all, delete-orphan")
     students = relationship("Student", back_populates="college", cascade="all, delete-orphan")
     faculties = relationship("Faculty", back_populates="college", cascade="all, delete-orphan")
+    admission_leads = relationship("AdmissionLead", back_populates="college", cascade="all, delete-orphan")
 
 
 class Department(Base):
@@ -77,7 +81,7 @@ class Department(Base):
     funded_grants_lakhs = Column(Float, default=0.0)
     patents_filed = Column(Integer, default=0)
     nba_status = Column(String(50), default="Accredited Tier-1")
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     college = relationship("College", back_populates="departments")
@@ -100,7 +104,7 @@ class Faculty(Base):
     citations_count = Column(Integer, default=0)
     h_index = Column(Integer, default=0)
     consulting_projects = Column(JSON)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     college = relationship("College", back_populates="faculties")
@@ -144,7 +148,7 @@ class Student(Base):
     job_title = Column(String(150), default="Student")
     linkedin_url = Column(String(500))
     google_scholar_url = Column(String(500))
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     college = relationship("College", back_populates="students")
@@ -166,7 +170,7 @@ class OutreachEvent(Base):
     target_audience = Column(String(200))
     brochure_asset = Column(String(500))
     learning_outcomes = Column(JSON)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     registrations = relationship("EventRegistration", back_populates="event", cascade="all, delete-orphan")
@@ -184,7 +188,7 @@ class PartnerSchool(Base):
     registered_batch_size = Column(Integer, default=0)
     selected_program = Column(String(255))
     mou_signed = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class EventRegistration(Base):
@@ -197,7 +201,7 @@ class EventRegistration(Base):
     phone = Column(String(50), nullable=False)
     institution_name = Column(String(255))
     target_exam = Column(String(50))  # KCET, COMEDK, JEE
-    registered_at = Column(DateTime, default=datetime.utcnow)
+    registered_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     event = relationship("OutreachEvent", back_populates="registrations")
@@ -219,7 +223,10 @@ class AdmissionLead(Base):
     intent_score = Column(Integer, default=1)  # 1 (Cold) to 5 (High-Priority Direct Escalation)
     query_notes = Column(Text)
     status = Column(String(50), default="New")  # New, Contacted, Verified, Enrolled
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    # Relationships
+    college = relationship("College", back_populates="admission_leads")
 
 
 class CandidateProfile(Base):
@@ -253,7 +260,7 @@ class CandidateProfile(Base):
 
     # Ingestion & Metadata
     profile_summary_text = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 __all__ = [
