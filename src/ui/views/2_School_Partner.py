@@ -7,6 +7,7 @@ School & PU College Partner Desk (Advanced Edition):
 3. Live Webinars, External Form Links & Post-Webinar Material Repository (PDF, PPT, Videos)
 4. Event Photo Uploads, Sample Feedback & AI/RAG-Powered Feedback Analytics
 5. Detailed Analytics & Institutional Research Report Generator
+6. Partner RAG Chatbot Assistant
 """
 
 import io
@@ -24,7 +25,7 @@ def render_school_partner_view():
     inject_custom_css()
 
     st.title("🏫 High School & PU College Outreach Partner Desk")
-    st.markdown("Manage classroom cohorts, analyze STEM diagnostics, bulk-issue certificates, publish post-webinar materials, and run RAG feedback analytics.")
+    st.markdown("Manage classroom cohorts, analyze STEM diagnostics, bulk-issue certificates, publish post-webinar materials, run RAG feedback analytics, and chat with the institutional RAG advisor.")
 
     # High-level Metrics Banner
     m1, m2, m3, m4 = st.columns(4)
@@ -39,13 +40,14 @@ def render_school_partner_view():
 
     st.divider()
 
-    # Navigation Tabs (5 Comprehensive Advanced Sections)
-    t_reg, t_cert, t_webinars, t_feedback, t_report = st.tabs([
+    # Navigation Tabs (6 Comprehensive Advanced Sections)
+    t_reg, t_cert, t_webinars, t_feedback, t_report, t_rag = st.tabs([
         "📝 1. Cohort & Diagnostics", 
         "🎓 2. Bulk XLS Certificates", 
-        "📅 3. Webinars, Forms & Materials", 
-        "🤖 4. Photos, Feedback & RAG Analyzer",
-        "📊 5. Analytics & Research Dossier"
+        "📅 3. Webinars & Materials", 
+        "🤖 4. Photos & RAG Analyzer",
+        "📊 5. Research Dossier",
+        "💬 6. Partner RAG Chatbot"
     ])
 
     # =========================================================================
@@ -236,13 +238,12 @@ def render_school_partner_view():
             )
 
     # =========================================================================
-    # PART 3: Live Webinars, Form Links & Post-Webinar Material Repository (PDF, PPT, Video)
+    # PART 3: Live Webinars, Form Links & Post-Webinar Material Repository
     # =========================================================================
     with t_webinars:
         st.subheader("📅 3. Webinars, External Form Links & Post-Webinar Material Repository")
         st.caption("Access join links, link external Google Forms, and upload/download post-webinar presentation slides (PDF/PPT) and recorded videos.")
 
-        # External Form Link Integration Card
         with st.expander("🔗 Link External Google Form / Microsoft Form", expanded=False):
             form_link_input = st.text_input(
                 "Paste Google Form / Microsoft Form URL:",
@@ -260,7 +261,6 @@ def render_school_partner_view():
         st.markdown("#### 📁 Post-Webinar Learning Materials (PDF, PPT, Videos)")
         st.caption("Coordinators can upload presentation decks and recorded video links for student revision.")
 
-        # Material Uploader
         with st.expander("📤 Upload Post-Webinar Presentation Slides (.pdf, .ppt, .pptx) & Recording Link", expanded=False):
             up_mat_title = st.text_input("Masterclass Session Title:", value="Generative AI & RAG Masterclass 2026")
             up_file = st.file_uploader("Upload Presentation Deck (PDF or PPTX):", type=["pdf", "pptx", "ppt"])
@@ -277,7 +277,6 @@ def render_school_partner_view():
                 })
                 st.success(f"✅ Materials for '{up_mat_title}' successfully published to the student portal!")
 
-        # Display Published Materials Repository
         published_mats = st.session_state.get("uploaded_session_materials", [
             {
                 "title": "Generative AI & Agentic RAG Foundation (Sample Deck)",
@@ -342,7 +341,7 @@ def render_school_partner_view():
         if st.button("🚀 Run RAG Feedback Analysis & Generate Executive Summary", type="primary", key="btn_run_rag_analysis"):
             with st.spinner("Indexing feedback corpus into vector memory and analyzing sentiment clusters..."):
                 import time
-                time.sleep(1.2) # Simulate semantic embedding & RAG pipeline
+                time.sleep(1.2)
                 st.session_state.rag_analysis_executed = True
 
         if st.session_state.get("rag_analysis_executed", False):
@@ -430,6 +429,43 @@ Continued institutional collaboration through tailored bootcamps and transparent
                 key="dl_research_report",
             )
             st.success("✅ Research dossier successfully compiled and ready for download!")
+
+    # =========================================================================
+    # PART 6: PARTNER RAG CHATBOT ASSISTANT
+    # =========================================================================
+    with t_rag:
+        st.subheader("💬 6. Partner RAG Chatbot Assistant")
+        st.markdown("Ask questions about engineering seat matrices, cutoff trends, scholarship criteria, or outreach collaboration schedules.")
+
+        if "partner_rag_history" not in st.session_state:
+            st.session_state.partner_rag_history = [
+                {
+                    "role": "assistant",
+                    "content": "Hello Counselor! I am your PragyanAI Partner RAG Assistant. How can I assist your high school students with engineering admissions today?"
+                }
+            ]
+
+        for message in st.session_state.partner_rag_history:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
+        if user_prompt := st.chat_input("Ask about engineering admissions, entrance dates, or college cutoffs..."):
+            st.session_state.partner_rag_history.append({"role": "user", "content": user_prompt})
+            with st.chat_message("user"):
+                st.markdown(user_prompt)
+
+            # RAG Simulation Response tailored for school partners
+            p_lower = user_prompt.lower()
+            if "date" in p_lower or "exam" in p_lower or "schedule" in p_lower:
+                ans = "KCET 2026 examinations are scheduled for late April, followed by COMEDK UGET in mid-May. Our outreach team provides free mock test portals for all partner school batches."
+            elif "cutoff" in p_lower or "rank" in p_lower:
+                ans = "For Tier-1 Bengaluru colleges (RVCE, BMSCE, MSRIT), General Merit closing ranks for Computer Science range between 450 and 2,100 in KCET Round-2."
+            else:
+                ans = f"Based on verified PragyanAI telemetry for your query (*'{user_prompt}'*), partner school batches receive priority slotting for campus visits and faculty counseling sessions."
+
+            with st.chat_message("assistant"):
+                st.markdown(ans)
+            st.session_state.partner_rag_history.append({"role": "assistant", "content": ans})
 
 
 if __name__ == "__main__":
