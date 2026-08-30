@@ -9,7 +9,7 @@ Student and Parent Aspirant Journey:
 - Step 4: 🗺️ State, District & City-Wise College Directory Explorer (Departments, Intakes & Full Addresses)
 - Step 5: 🏛️ Institutional Knowledge Directory, Verified Direct Portals & PDF Downloads
 - Step 6: 🗣️ Voice of Stakeholders (Alumni, Students, Recruiters, Principal & HOD Quotes/Bites)
-- Dedicated Counseling Desk: ✍️ Direct Admission Inquiry & Multi-Institution Seat Reservation
+- Dedicated Counseling Desk: ✍️ Direct Admission Inquiry & Interactive Multi-Institution Checkbox Grid
 - Multimodal Voice-Enabled College AI Assistant
 """
 
@@ -338,7 +338,7 @@ def render_aspirant_view():
                 st.rerun()
 
     # -------------------------------------------------------------------------
-    # TAB 7: Direct Counseling & Admission Lead Form (Multi-Institution Support)
+    # TAB 7: Direct Counseling & Admission Lead Form (Interactive Multi-Institution Checkbox Grid)
     # -------------------------------------------------------------------------
     with tab_lead:
         st.markdown(
@@ -346,7 +346,7 @@ def render_aspirant_view():
             <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; border-radius: 10px; padding: 1.1rem; margin-bottom: 1.25rem;">
                 <h3 style="margin: 0 0 0.2rem 0; color: #166534; font-size: 1.25rem;">✍️ Lock In Direct Admission & Counseling Support</h3>
                 <p style="margin: 0; color: #15803d; font-size: 0.9rem;">
-                    Connect directly with the college admissions directorates for multi-institution seat allocation, scholarship grants, and fee concessions.
+                    Connect directly with the college admissions directorate for seat allocation, scholarship grants, and fee concessions.
                 </p>
             </div>
             """,
@@ -361,28 +361,41 @@ def render_aspirant_view():
                 c_email = st.text_input("Contact Email Address *", placeholder="aarav@gmail.com")
             with c_f2:
                 c_phone = st.text_input("Mobile / WhatsApp Number *", placeholder="+91 98450 12345")
-                
-                # Multi-select for Target Institutions
-                target_colleges = st.multiselect(
-                    "Target Institutions (Select one or more):",
-                    [
-                        "E001 - RV College of Engineering (RVCE)",
-                        "E002 - BMS College of Engineering (BMSCE)",
-                        "E003 - Ramaiah Institute of Technology (MSRIT)",
-                        "E004 - PES University (PESU)",
-                        "E005 - Dayananda Sagar College of Engineering (DSCE)",
-                        "E006 - Bangalore Institute of Technology (BIT)",
-                        "E008 - The National Institute of Engineering (NIE)",
-                        "E010 - Siddaganga Institute of Technology (SIT)",
-                    ],
-                    default=["E001 - RV College of Engineering (RVCE)"],
-                )
-                
                 target_branch = st.selectbox(
                     "Target Branch of Choice:",
                     ["CSE", "AI-DS", "ISE", "ECE", "MECH"],
                 )
 
+            st.markdown(
+                """
+                <div style="font-weight: 700; color: #0f172a; margin-top: 0.75rem; margin-bottom: 0.35rem; font-size: 0.95rem;">
+                    🏛️ Target Institution(s) — Select all colleges you wish to apply to:
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            # Interactive Multi-College Selector Grid (Checkboxes)
+            college_options_list = [
+                ("E001", "RV College of Engineering (RVCE)"),
+                ("E002", "BMS College of Engineering (BMSCE)"),
+                ("E003", "Ramaiah Institute of Technology (MSRIT)"),
+                ("E004", "PES University (PESU)"),
+                ("E005", "Dayananda Sagar College of Engineering (DSCE)"),
+                ("E006", "Bangalore Institute of Technology (BIT)"),
+                ("E008", "The National Institute of Engineering (NIE)"),
+                ("E010", "Siddaganga Institute of Technology (SIT)"),
+            ]
+
+            selected_institutions = []
+            grid_cols = st.columns(2)
+            for idx, (code, col_label) in enumerate(college_options_list):
+                with grid_cols[idx % 2]:
+                    checked = st.checkbox(f"{code} — {col_label}", key=f"lead_chk_col_{code}")
+                    if checked:
+                        selected_institutions.append(f"{code} - {col_label}")
+
+            st.markdown("<div style='margin-bottom: 0.5rem;'></div>", unsafe_allow_html=True)
             adm_type = st.radio(
                 "Preferred Admission Pathway:",
                 ["Management Quota (Direct Seat Lock)", "Merit Counseling (KCET/COMEDK)", "Sports / NRI Sponsorship"],
@@ -400,13 +413,13 @@ def render_aspirant_view():
             )
 
             if submit_inquiry:
-                if not s_name or not c_email or not c_phone or not target_colleges:
-                    st.error("Please fill in all mandatory fields (*) and select at least one target institution.")
+                if not s_name or not c_email or not c_phone or not selected_institutions:
+                    st.error("Please fill in all mandatory fields (*) and check at least one Target Institution above.")
                 else:
                     try:
                         with get_db() as db:
                             repo = CollegeRepository(db)
-                            for col_str in target_colleges:
+                            for col_str in selected_institutions:
                                 code_val = col_str.split(" - ")[0]
                                 repo.create_admission_lead({
                                     "student_name": s_name,
@@ -419,7 +432,7 @@ def render_aspirant_view():
                                     "intent_score": 5 if "Management" in adm_type else 3,
                                     "query_notes": notes,
                                 })
-                        st.success(f"🎉 Admission inquiries for {len(target_colleges)} selected institution(s) have been logged! The Admissions Directorate will contact you shortly.")
+                        st.success(f"🎉 Admission inquiries for {len(selected_institutions)} selected institution(s) have been logged! The Admissions Directorate will contact you shortly.")
                     except Exception as err:
                         st.error(f"Error submitting inquiry: {err}")
 
