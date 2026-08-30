@@ -207,7 +207,7 @@ def main():
             view_module.render_admission_rag_advisor_view()
 
         elif "High School & PU Partner Desk" in view_selection:
-            view_module = importlib.import_module("src.ui.views.2_🏫_School_Partner")
+            view_module = importlib.import_module("src.ui.views.2_School_Partner")
             view_module.render_school_partner_view()
 
         elif "School RAG Analytics" in view_selection:
