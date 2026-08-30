@@ -78,7 +78,7 @@ def render_company_logo_header():
         try:
             st.image("src/ui/assets/PragyanAI_Transperent.png", width=120)
         except Exception:
-            st.markdown("### 🏛️ **PragyanAI**")
+            st.markdown("### **PragyanAI**")
     with col_title:
         st.markdown("### **PragyanAI College Intelligence & Decision Portal**")
         st.caption("AI-Powered Institutional Governance, Admissions Telemetry & Recruiter Benchmarking Hub")
@@ -105,17 +105,17 @@ def render_welcome_dashboard(active_role: UserRole):
         st.metric("Active RAG AI Sessions", "1,840 Daily", "99.4% Accuracy")
 
     st.markdown("---")
-    st.markdown("### 🚀 Quick Access Portals Based on Your Persona")
+    st.markdown("###  Quick Access Portals Based on Your Persona")
     
     col_card1, col_card2, col_card3 = st.columns(3)
     with col_card1:
-        st.markdown("#### 🏛️ College Master Showcase")
+        st.markdown("####  College Master Showcase")
         st.write("Inspect autonomous infrastructure galleries, R&D centers, and faculty research profiles.")
     with col_card2:
-        st.markdown("#### 📊 Comparative Analytics")
+        st.markdown("####  Comparative Analytics")
         st.write("Benchmark KCET/COMEDK cutoff trends and cross-college placement CTC distributions.")
     with col_card3:
-        st.markdown("#### 🤖 AI RAG Knowledge Agent")
+        st.markdown("#### AI RAG Knowledge Agent")
         st.write("Ask questions and receive instant AI-driven guidance on admissions and career pathways.")
 
     st.info("💡 **Tip:** Use the sidebar **Role-Based Navigation** menu to jump directly to your authorized portals.")
@@ -144,43 +144,43 @@ def main():
     # Live Database Status Monitor
     is_db_connected = check_db_health()
     if is_db_connected:
-        st.sidebar.caption("🟢 **Database Status:** Connected (Active)")
+        st.sidebar.caption(" **Database Status:** Connected (Active)")
     else:
-        st.sidebar.caption("🟡 **Database Status:** Standby Mode")
+        st.sidebar.caption(" **Database Status:** Standby Mode")
 
     st.sidebar.markdown("---")
-    st.sidebar.subheader("🧭 Role-Based Navigation")
+    st.sidebar.subheader(" Role-Based Navigation")
 
     # STRICT Persona-Based Navigation Menus
     if active_role in [UserRole.ADMIN, UserRole.LEADERSHIP]:
         view_options = [
-            "🏠 Welcome Dashboard",
-            "🏛️ Dean & Leadership Governance",
-            "🏛️ College Master Hub & Showcase",
-            "📊 Institutional Analytics & Reports",
-            "👥 Student Inquiries & Engagement",
-            "🤖 AI RAG Chat & Profile Advisor",
+            "1 Welcome Dashboard",
+            "2 Dean & Leadership Governance",
+            "3 College Master Hub & Showcase",
+            "4 Institutional Analytics & Reports",
+            "5 Student Inquiries & Engagement",
+            "6 AI RAG Chat & Profile Advisor",
         ]
     elif active_role == UserRole.RECRUITER:
         view_options = [
-            "🏠 Welcome Dashboard",
-            "🏛️ College Master Hub & Showcase",
-            "📊 Institutional Analytics & Reports",
-            "🤖 AI RAG Chat & Profile Advisor",
+            "1 Welcome Dashboard",
+            "2 College Master Hub & Showcase",
+            "3 Institutional Analytics & Reports",
+            "4 AI RAG Chat & Profile Advisor",
         ]
     elif active_role == UserRole.SCHOOL_PARTNER:
         view_options = [
-            "🏠 Welcome Dashboard",
-            "🏫 High School & PU Partner Desk",
-            "📊 School RAG Analytics & Sentiments",
+            "1 Welcome Dashboard",
+            "2 High School & PU Partner Desk",
+            "3 School RAG Analytics & Sentiments",
         ]
     else:  # Student / Aspirant / Guest
         view_options = [
-            "🏠 Welcome Dashboard",
-            "💬 AI Decision Hub & Aspirant Desk",
-            "🏛️ College Deep-Dive & Governance",
-            "🤖 Admission RAG Advisory Chat",
-            "🏛️ College Master Hub & Showcase",
+            "1 Welcome Dashboard",
+            "2 AI Decision Hub & Aspirant Desk",
+            "3 College Deep-Dive & Governance",
+            "4 Admission RAG Advisory Chat",
+            "5 College Master Hub & Showcase",
         ]
 
     view_selection = st.sidebar.radio(
