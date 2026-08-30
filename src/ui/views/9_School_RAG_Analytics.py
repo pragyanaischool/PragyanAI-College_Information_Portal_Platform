@@ -13,7 +13,7 @@ from src.core.security import UserRole
 
 def render_school_rag_analytics_view():
     """Renders year-wise activity analytics and overall student sentiment reports for school partners."""
-    st.title("📊 School RAG Analytics & Student Sentiment Hub")
+    st.title("PragyanAI - School RAG Analytics & Student Sentiment Hub")
     st.markdown(
         "Analyze year-wise outreach engagement, seminar participation trends, and overall student sentiment "
         "extracted via vector RAG telemetry across all participating high school cohorts."
@@ -35,16 +35,16 @@ def render_school_rag_analytics_view():
 
     # Tabs for Analytics & Sentiment
     tab_years, tab_sentiment, tab_chat = st.tabs([
-        "📅 Year-Wise Activity Analysis",
-        "🧠 Overall Student Sentiments",
-        "💬 School RAG Chat & Query Desk"
+        "1. Year-Wise Activity Analysis",
+        "2. Overall Student Sentiments",
+        "3. School RAG Chat & Query Desk"
     ])
 
     # -------------------------------------------------------------------------
     # TAB 1: YEAR-WISE ACTIVITY ANALYSIS
     # -------------------------------------------------------------------------
     with tab_years:
-        st.subheader("📈 Year-Wise Outreach & Cohort Growth Analytics")
+        st.subheader(" Year-Wise Outreach & Cohort Growth Analytics")
         st.markdown("Historical performance tracking of student workshops, certificate issuances, and engineering aptitude diagnostics.")
 
         yearly_data = [
@@ -54,7 +54,7 @@ def render_school_rag_analytics_view():
         ]
         st.dataframe(pd.DataFrame(yearly_data), use_container_width=True)
 
-        st.markdown("### 📊 Cohort Growth Trajectory")
+        st.markdown("###  Cohort Growth Trajectory")
         chart_data = pd.DataFrame({
             "Year": ["2023-24", "2024-25", "2025-26"],
             "Students Reached": [1450, 2800, 4850]
@@ -65,18 +65,18 @@ def render_school_rag_analytics_view():
     # TAB 2: OVERALL STUDENT SENTIMENTS
     # -------------------------------------------------------------------------
     with tab_sentiment:
-        st.subheader("🧠 Semantic Sentiment Clustering & Feedback Insights")
+        st.subheader(" Semantic Sentiment Clustering & Feedback Insights")
         st.markdown("Aggregated sentiment analysis derived from post-webinar feedback forms, Q&A sessions, and counseling logs.")
 
         col_s1, col_s2 = st.columns(2)
         with col_s1:
-            st.markdown("#### ⭐ Sentiment Breakdown")
+            st.markdown("####  Sentiment Breakdown")
             st.markdown("- **Highly Positive (5/5):** 78%")
             st.markdown("- **Positive (4/5):** 18%")
             st.markdown("- **Neutral / Inquiry (3/5):** 4%")
             st.markdown("- **Critical / Constructive:** 0%")
         with col_s2:
-            st.markdown("#### 🔍 Top Requested Topics")
+            st.markdown("####  Top Requested Topics")
             st.markdown("1. **Generative AI & Agentic RAG Workflows** (68% interest)")
             st.markdown("2. **KCET & COMEDK Option Entry Strategy** (62% interest)")
             st.markdown("3. **Semiconductor VLSI & Hardware Prototyping** (45% interest)")
@@ -85,7 +85,7 @@ def render_school_rag_analytics_view():
     # TAB 3: SCHOOL RAG CHAT & QUERY DESK
     # -------------------------------------------------------------------------
     with tab_chat:
-        st.subheader("💬 Dedicated School RAG Knowledge Assistant")
+        st.subheader(" Dedicated School RAG Knowledge Assistant")
         st.caption("Ask specific questions regarding year-wise trends, student sentiment clusters, or scholarship eligibility.")
 
         if "school_rag_chat_history" not in st.session_state:
