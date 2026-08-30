@@ -51,9 +51,9 @@ class College(Base):
     median_ctc_lpa = Column(Float)
     highest_ctc_lpa = Column(Float)
     
-    # Institutional Governance Fields (with fallback properties)
-    _vision = Column("vision", Text, nullable=True)
-    _mission = Column("mission", Text, nullable=True)
+    # Institutional Governance Fields
+    vision = Column(Text, nullable=True, default="Leadership in quality technical education, interdisciplinary research & innovation.")
+    mission = Column(Text, nullable=True, default="Deliver outcome-based quality education emphasizing experiential learning and industry collaboration.")
 
     departments_and_intake = Column(JSON, nullable=True)
     top_recruiters = Column(JSON, nullable=True)
@@ -71,22 +71,6 @@ class College(Base):
     faculties = relationship("Faculty", back_populates="college", cascade="all, delete-orphan")
     admission_leads = relationship("AdmissionLead", back_populates="college", cascade="all, delete-orphan")
 
-    @property
-    def vision(self):
-        return self._vision or "Leadership in quality technical education, interdisciplinary research & innovation."
-
-    @vision.setter
-    def vision(self, value):
-        self._vision = value
-
-    @property
-    def mission(self):
-        return self._mission or "Deliver outcome-based quality education emphasizing experiential learning and industry collaboration."
-
-    @mission.setter
-    def mission(self, value):
-        self._mission = value
-
 
 class Department(Base):
     __tablename__ = "departments"
@@ -103,10 +87,10 @@ class Department(Base):
     patents_filed = Column(Integer, default=0)
     nba_status = Column(String(50), default="Accredited Tier-1")
     
-    # Departmental Intelligence Fields with safe mapping fallbacks
-    _centers_of_excellence = Column("centers_of_excellence", JSON, nullable=True)
-    _skill_programs = Column("skill_programs", JSON, nullable=True)
-    _notable_alumni = Column("notable_alumni", JSON, nullable=True)
+    # Direct JSON Mappings for Departmental Telemetry
+    centers_of_excellence = Column(JSON, nullable=True)
+    skill_programs = Column(JSON, nullable=True)
+    notable_alumni = Column(JSON, nullable=True)
 
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -114,47 +98,27 @@ class Department(Base):
     college = relationship("College", back_populates="departments")
     faculties = relationship("Faculty", back_populates="department", cascade="all, delete-orphan")
 
-    @property
-    def centers_of_excellence(self):
-        if self._centers_of_excellence:
-            return self._centers_of_excellence
-        return [
-            "AI & High Performance Computing (HPC) Lab",
-            "Cloud Native & Distributed Systems Testbed",
-            "Autonomous Systems & IoT Innovation Sandbox"
-        ]
-
-    @centers_of_excellence.setter
-    def centers_of_excellence(self, value):
-        self._centers_of_excellence = value
-
-    @property
-    def skill_programs(self):
-        if self._skill_programs:
-            return self._skill_programs
-        return [
-            "Generative AI & LLM Orchestration Bootcamps",
-            "Advanced Data Structures & Competitive Programming",
-            "Kubernetes & Cloud Infrastructure Automation"
-        ]
-
-    @skill_programs.setter
-    def skill_programs(self, value):
-        self._skill_programs = value
-
-    @property
-    def notable_alumni(self):
-        if self._notable_alumni:
-            return self._notable_alumni
-        return [
-            "Aarav Sharma (Founder, DeepTech AI)",
-            "Neha Rao (Principal Engineer, Microsoft)",
-            "Vikram Sundaram (Director of Engineering, Google)"
-        ]
-
-    @notable_alumni.setter
-    def notable_alumni(self, value):
-        self._notable_alumni = value
+    def __init__(self, **kwargs):
+        # Guarantee fallback lists if kwargs don't include them
+        if "centers_of_excellence" not in kwargs or not kwargs["centers_of_excellence"]:
+            kwargs["centers_of_excellence"] = [
+                "AI & High Performance Computing (HPC) Lab",
+                "Cloud Native & Distributed Systems Testbed",
+                "Autonomous Systems & IoT Innovation Sandbox"
+            ]
+        if "skill_programs" not in kwargs or not kwargs["skill_programs"]:
+            kwargs["skill_programs"] = [
+                "Generative AI & LLM Orchestration Bootcamps",
+                "Advanced Data Structures & Competitive Programming",
+                "Kubernetes & Cloud Infrastructure Automation"
+            ]
+        if "notable_alumni" not in kwargs or not kwargs["notable_alumni"]:
+            kwargs["notable_alumni"] = [
+                "Aarav Sharma (Founder, DeepTech AI)",
+                "Neha Rao (Principal Engineer, Microsoft)",
+                "Vikram Sundaram (Director of Engineering, Google)"
+            ]
+        super().__init__(**kwargs)
 
 
 class Faculty(Base):
@@ -329,4 +293,3 @@ __all__ = [
     "AdmissionLead",
     "CandidateProfile",
 ]
-
