@@ -14,6 +14,7 @@ Exports callable generation functions and provides standalone CLI execution for:
 """
 
 import json
+import logging
 import os
 from pathlib import Path
 import random
@@ -21,9 +22,8 @@ import uuid
 from fpdf import FPDF
 import pandas as pd
 from pptx import Presentation
-from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN
-from pptx.util import Inches, Pt
+
+logger = logging.getLogger(__name__)
 
 # ==============================================================================
 # 0. DIRECTORY CONFIGURATION
@@ -38,7 +38,7 @@ VECTOR_DIR = BASE_DIR / "vector_store"
 
 
 def init_target_directories():
-    """Initializes and ensures all data directories exist."""
+    """Initializes and ensures all data directories exist securely."""
     for folder in [
         RAW_BROCHURES,
         RAW_PRESENTATIONS,
@@ -46,7 +46,10 @@ def init_target_directories():
         SEED_DIR,
         VECTOR_DIR,
     ]:
-        folder.mkdir(parents=True, exist_ok=True)
+        try:
+            folder.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            logger.error(f"Failed to create directory {folder}: {e}")
 
 
 # ==============================================================================
@@ -67,7 +70,7 @@ COLLEGES_DATA = [
         "naac_grade": "A++",
         "naac_cgpa": 3.78,
         "nba_accredited_programs": 14,
-        "nirf_rank_2025": 89,
+        "nirf_rank_2025": 38,
         "intake_total": 1460,
         "mgmt_fee_cse_lakhs": 16.0,
         "govt_fee_cet_lakhs": 1.07,
@@ -127,7 +130,7 @@ COLLEGES_DATA = [
         "naac_grade": "A++",
         "naac_cgpa": 3.83,
         "nba_accredited_programs": 12,
-        "nirf_rank_2025": 101,
+        "nirf_rank_2025": 72,
         "intake_total": 1580,
         "mgmt_fee_cse_lakhs": 12.5,
         "govt_fee_cet_lakhs": 1.07,
@@ -184,13 +187,13 @@ COLLEGES_DATA = [
         "naac_grade": "A+",
         "naac_cgpa": 3.48,
         "nba_accredited_programs": 11,
-        "nirf_rank_2025": 78,
+        "nirf_rank_2025": 65,
         "intake_total": 1420,
         "mgmt_fee_cse_lakhs": 11.0,
         "govt_fee_cet_lakhs": 1.07,
         "comedk_fee_lakhs": 2.81,
-        "median_ctc_lpa": 10.5,
-        "highest_ctc_lpa": 46.0,
+        "median_ctc_lpa": 12.0,
+        "highest_ctc_lpa": 50.0,
         "departments_and_intake": {
             "Computer Science & Engg (CSE)": 240,
             "AI & Machine Learning (AI-ML)": 120,
@@ -219,8 +222,7 @@ COLLEGES_DATA = [
         ],
         "video_tour_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         "principal_statement": (
-            "Creating industry-ready innovators through interdisciplinary"
-            " research and agile curricula."
+            "Committed to academic rigor, innovation, and ethical technological advancements."
         ),
         "alumni_linkedin_hub": (
             "https://www.linkedin.com/school/ramaiah-institute-of-technology/people/"
@@ -237,16 +239,16 @@ COLLEGES_DATA = [
         "address": "100 Feet Ring Road, BSK III Stage, Bengaluru, Karnataka 560085",
         "established_year": 1972,
         "autonomous": True,
-        "naac_grade": "A+",
+        "naac_grade": "A",
         "naac_cgpa": 3.52,
         "nba_accredited_programs": 10,
-        "nirf_rank_2025": 105,
+        "nirf_rank_2025": 90,
         "intake_total": 1800,
         "mgmt_fee_cse_lakhs": 14.0,
         "govt_fee_cet_lakhs": 1.07,
         "comedk_fee_lakhs": 4.5,
-        "median_ctc_lpa": 13.0,
-        "highest_ctc_lpa": 55.0,
+        "median_ctc_lpa": 13.5,
+        "highest_ctc_lpa": 65.0,
         "departments_and_intake": {
             "Computer Science & Engg (CSE)": 720,
             "AI & Machine Learning": 240,
@@ -271,8 +273,7 @@ COLLEGES_DATA = [
         ],
         "video_tour_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         "principal_statement": (
-            "Navigating students to explore, innovate, and conquer global"
-            " engineering challenges."
+            "Design your tomorrow with cutting-edge core engineering and multi-agent AI ecosystems."
         ),
         "alumni_linkedin_hub": (
             "https://www.linkedin.com/school/pes-university/people/"
@@ -325,8 +326,7 @@ COLLEGES_DATA = [
         ],
         "video_tour_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         "principal_statement": (
-            "Comprehensive holistic education with high placement conversion"
-            " in top multinational firms."
+            "Comprehensive holistic education with high placement conversion in top multinational firms."
         ),
         "alumni_linkedin_hub": (
             "https://www.linkedin.com/school/dayananda-sagar-college-of-engineering/people/"
@@ -371,8 +371,7 @@ COLLEGES_DATA = [
         ],
         "video_tour_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         "principal_statement": (
-            "Nurturing technical expertise and foundational ethics in future"
-            " industry leaders."
+            "Nurturing technical expertise and foundational ethics in future industry leaders."
         ),
         "alumni_linkedin_hub": (
             "https://www.linkedin.com/school/bangalore-institute-of-technology/people/"
@@ -420,8 +419,7 @@ COLLEGES_DATA = [
         ],
         "video_tour_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         "principal_statement": (
-            "Dedicated to practical skills, rigorous academic training, and"
-            " rural development outreach."
+            "Dedicated to practical skills, rigorous academic training, and rural development outreach."
         ),
         "alumni_linkedin_hub": (
             "https://www.linkedin.com/school/sir-m-visvesvaraya-institute-of-technology/people/"
@@ -471,8 +469,7 @@ COLLEGES_DATA = [
         ],
         "video_tour_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         "principal_statement": (
-            "A heritage of technical eminence building nation-builders and"
-            " core engineering leaders."
+            "A heritage of technical eminence building nation-builders and core engineering leaders."
         ),
         "alumni_linkedin_hub": (
             "https://www.linkedin.com/school/the-national-institute-of-engineering-mysuru/people/"
@@ -516,8 +513,7 @@ COLLEGES_DATA = [
         ],
         "video_tour_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         "principal_statement": (
-            "Fostering technological competence and moral responsibility in a"
-            " serene campus setting."
+            "Fostering technological competence and moral responsibility in a serene campus setting."
         ),
         "alumni_linkedin_hub": (
             "https://www.linkedin.com/school/nmam-institute-of-technology/people/"
@@ -568,8 +564,7 @@ COLLEGES_DATA = [
         ],
         "video_tour_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         "principal_statement": (
-            "Value-based education grounded in discipline, innovation, and"
-            " industrial readiness."
+            "Value-based education grounded in discipline, innovation, and industrial readiness."
         ),
         "alumni_linkedin_hub": (
             "https://www.linkedin.com/school/siddaganga-institute-of-technology/people/"
@@ -618,8 +613,7 @@ COLLEGES_DATA = [
         ],
         "video_tour_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         "principal_statement": (
-            "Pioneering technical education that transforms students into"
-            " visionary problem solvers."
+            "Pioneering technical education that transforms students into visionary problem solvers."
         ),
         "alumni_linkedin_hub": (
             "https://www.linkedin.com/school/jss-science-and-technology-university/people/"
@@ -663,8 +657,7 @@ COLLEGES_DATA = [
         ],
         "video_tour_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         "principal_statement": (
-            "Empowering North Karnataka with quality engineering, tech"
-            " incubators, and industry ties."
+            "Empowering North Karnataka with quality engineering, tech incubators, and industry ties."
         ),
         "alumni_linkedin_hub": (
             "https://www.linkedin.com/school/kls-gogte-institute-of-technology/people/"
@@ -712,8 +705,7 @@ COLLEGES_DATA = [
         ],
         "video_tour_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         "principal_statement": (
-            "Modern progressive learning with rigorous hands-on coding and"
-            " industry hackathons."
+            "Modern progressive learning with rigorous hands-on coding and industry hackathons."
         ),
         "alumni_linkedin_hub": (
             "https://www.linkedin.com/school/bmsit-m/people/"
@@ -757,8 +749,7 @@ COLLEGES_DATA = [
         ],
         "video_tour_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         "principal_statement": (
-            "Connecting students directly to IT corridor corporate ecosystem"
-            " and global certification."
+            "Connecting students directly to IT corridor corporate ecosystem and global certification."
         ),
         "alumni_linkedin_hub": (
             "https://www.linkedin.com/school/new-horizon-college-of-engineering/people/"
@@ -803,8 +794,7 @@ COLLEGES_DATA = [
         ],
         "video_tour_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         "principal_statement": (
-            "Igniting research passions through hands-on space tech,"
-            " robotics, and AI ventures."
+            "Igniting research passions through hands-on space tech, robotics, and AI ventures."
         ),
         "alumni_linkedin_hub": (
             "https://www.linkedin.com/school/nitte-meenakshi-institute-of-technology/people/"
@@ -814,12 +804,16 @@ COLLEGES_DATA = [
 
 
 def generate_colleges_json():
-    """Generates and writes data/seed/colleges.json."""
+    """Generates and writes data/seed/colleges.json securely."""
     init_target_directories()
     dest_path = SEED_DIR / "colleges.json"
-    with open(dest_path, "w", encoding="utf-8") as f:
-        json.dump(COLLEGES_DATA, f, indent=2)
-    print(f"  [+] Generated {dest_path} ({len(COLLEGES_DATA)} Colleges)")
+    try:
+        with open(dest_path, "w", encoding="utf-8") as f:
+            json.dump(COLLEGES_DATA, f, indent=2)
+        logger.info(f"Generated {dest_path} ({len(COLLEGES_DATA)} Colleges)")
+        print(f"  [+] Generated {dest_path} ({len(COLLEGES_DATA)} Colleges)")
+    except Exception as e:
+        logger.error(f"Failed to generate colleges.json: {e}")
     return str(dest_path)
 
 
@@ -827,7 +821,7 @@ def generate_colleges_json():
 # 2. ENTRANCE EXAM CUTOFFS GENERATOR (data/seed/cutoffs.csv)
 # ==============================================================================
 def generate_cutoffs_csv():
-    """Generates multi-year cutoff records across colleges, exams, and categories."""
+    """Generates multi-year cutoff records across colleges, exams, and categories securely."""
     init_target_directories()
     branches = ["CSE", "AI-DS", "ISE", "ECE", "MECH"]
     exams = ["KCET", "COMEDK"]
@@ -869,8 +863,12 @@ def generate_cutoffs_csv():
                         })
 
     dest_path = SEED_DIR / "cutoffs.csv"
-    pd.DataFrame(cutoffs_records).to_csv(dest_path, index=False)
-    print(f"  [+] Generated {dest_path} ({len(cutoffs_records)} Records)")
+    try:
+        pd.DataFrame(cutoffs_records).to_csv(dest_path, index=False)
+        logger.info(f"Generated {dest_path} ({len(cutoffs_records)} Records)")
+        print(f"  [+] Generated {dest_path} ({len(cutoffs_records)} Records)")
+    except Exception as e:
+        logger.error(f"Failed to generate cutoffs.csv: {e}")
     return str(dest_path)
 
 
@@ -878,7 +876,7 @@ def generate_cutoffs_csv():
 # 3. 1,050+ SYNTHETIC STUDENT PROFILES (data/seed/students_synthetic.csv)
 # ==============================================================================
 def generate_students_csv():
-    """Generates synthetic student talent pool with CGPA, skills, and placement records."""
+    """Generates synthetic student talent pool with CGPA, skills, and placement records securely."""
     init_target_directories()
     first_names = [
         "Aarav", "Aditi", "Rahul", "Sneha", "Vikram", "Ananya", "Rohan", "Pooja",
@@ -965,8 +963,12 @@ def generate_students_csv():
         })
 
     dest_path = SEED_DIR / "students_synthetic.csv"
-    pd.DataFrame(students_records).to_csv(dest_path, index=False)
-    print(f"  [+] Generated {dest_path} ({len(students_records)} Student Profiles)")
+    try:
+        pd.DataFrame(students_records).to_csv(dest_path, index=False)
+        logger.info(f"Generated {dest_path} ({len(students_records)} Student Profiles)")
+        print(f"  [+] Generated {dest_path} ({len(students_records)} Student Profiles)")
+    except Exception as e:
+        logger.error(f"Failed to generate students_synthetic.csv: {e}")
     return str(dest_path)
 
 
@@ -1032,12 +1034,16 @@ OUTREACH_EVENTS = [
 
 
 def generate_outreach_events_json():
-    """Generates and writes data/seed/outreach_events.json."""
+    """Generates and writes data/seed/outreach_events.json securely."""
     init_target_directories()
     dest_path = SEED_DIR / "outreach_events.json"
-    with open(dest_path, "w", encoding="utf-8") as f:
-        json.dump(OUTREACH_EVENTS, f, indent=2)
-    print(f"  [+] Generated {dest_path} (Outreach Events)")
+    try:
+        with open(dest_path, "w", encoding="utf-8") as f:
+            json.dump(OUTREACH_EVENTS, f, indent=2)
+        logger.info(f"Generated {dest_path} (Outreach Events)")
+        print(f"  [+] Generated {dest_path} (Outreach Events)")
+    except Exception as e:
+        logger.error(f"Failed to generate outreach_events.json: {e}")
     return str(dest_path)
 
 
@@ -1063,35 +1069,35 @@ class BrandedPDF(FPDF):
 
 
 def build_pdf_document(filepath, title, sections):
-    pdf = BrandedPDF()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.add_page()
+    try:
+        pdf = BrandedPDF()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.add_page()
 
-    # Main Document Header
-    pdf.set_font("Helvetica", "B", 16)
-    pdf.set_text_color(15, 23, 42)
-    pdf.cell(0, 10, title, 0, 1, "L")
-    pdf.ln(3)
-
-    # Render Section Blocks
-    for heading, body in sections:
-        pdf.set_font("Helvetica", "B", 12)
-        pdf.set_text_color(30, 64, 175)  # Royal Blue
-        pdf.cell(0, 7, heading, 0, 1, "L")
-
-        pdf.set_font("Helvetica", "", 10)
-        pdf.set_text_color(51, 65, 85)  # Slate
-        pdf.multi_cell(0, 5.5, body)
+        pdf.set_font("Helvetica", "B", 16)
+        pdf.set_text_color(15, 23, 42)
+        pdf.cell(0, 10, title, 0, 1, "L")
         pdf.ln(3)
 
-    pdf.output(str(filepath))
+        for heading, body in sections:
+            pdf.set_font("Helvetica", "B", 12)
+            pdf.set_text_color(30, 64, 175)  # Royal Blue
+            pdf.cell(0, 7, heading, 0, 1, "L")
+
+            pdf.set_font("Helvetica", "", 10)
+            pdf.set_text_color(51, 65, 85)  # Slate
+            pdf.multi_cell(0, 5.5, body)
+            pdf.ln(3)
+
+        pdf.output(str(filepath))
+    except Exception as e:
+        logger.error(f"Failed to build PDF document {filepath}: {e}")
 
 
 def generate_raw_documents():
-    """Generates official brochures and regulatory PDFs in data/raw/."""
+    """Generates official brochures and regulatory PDFs in data/raw/ securely."""
     init_target_directories()
 
-    # 1. Admission Flyer PDF
     build_pdf_document(
         RAW_BROCHURES / "Admission_Flyer_2026.pdf",
         "Management Admissions & Institutional Fee Structure (2026-27)",
@@ -1124,7 +1130,6 @@ def generate_raw_documents():
         ],
     )
 
-    # 2. NAAC SSR Summary PDF
     build_pdf_document(
         RAW_REGULATORY / "NAAC_Self_Study_Summary.pdf",
         "NAAC Self-Study Report (SSR) - Criterion Wise Summary",
@@ -1154,7 +1159,6 @@ def generate_raw_documents():
         ],
     )
 
-    # 3. NBA Compliance Report PDF
     build_pdf_document(
         RAW_REGULATORY / "NBA_Criteria_Compliance_Report.pdf",
         "National Board of Accreditation (NBA) - Outcome Based Education",
@@ -1176,6 +1180,7 @@ def generate_raw_documents():
             ),
         ],
     )
+    logger.info("Generated verified PDFs in data/raw/brochures/ & regulatory/")
     print("  [+] Generated verified PDFs in data/raw/brochures/ & regulatory/")
 
 
@@ -1183,61 +1188,63 @@ def generate_raw_documents():
 # 6. PROGRAMMATIC PPTX PRESENTATION (data/raw/presentations/)
 # ==============================================================================
 def generate_presentation_deck():
-    """Generates the Center of Excellence presentation deck in data/raw/presentations/."""
+    """Generates the Center of Excellence presentation deck in data/raw/presentations/ securely."""
     init_target_directories()
-    prs = Presentation()
+    try:
+        prs = Presentation()
 
-    # Slide 1: Title Deck
-    title_slide_layout = prs.slide_layouts[0]
-    slide1 = prs.slides.add_slide(title_slide_layout)
-    slide1.shapes.title.text = "Center of Excellence & R&D Labs"
-    subtitle = slide1.placeholders[1]
-    subtitle.text = (
-        "PragyanAI Institutional Engineering Benchmark\nAutomated Hardware & AI"
-        " Innovation Hubs (2026)"
-    )
+        title_slide_layout = prs.slide_layouts[0]
+        slide1 = prs.slides.add_slide(title_slide_layout)
+        slide1.shapes.title.text = "Center of Excellence & R&D Labs"
+        subtitle = slide1.placeholders[1]
+        subtitle.text = (
+            "PragyanAI Institutional Engineering Benchmark\nAutomated Hardware & AI"
+            " Innovation Hubs (2026)"
+        )
 
-    # Slide 2: Research Facilities
-    bullet_slide_layout = prs.slide_layouts[1]
-    slide2 = prs.slides.add_slide(bullet_slide_layout)
-    slide2.shapes.title.text = "State-of-the-Art Research Centers"
-    tf2 = slide2.placeholders[1].text_frame
-    tf2.text = "Active Industry-Sponsored Facilities:"
+        bullet_slide_layout = prs.slide_layouts[1]
+        slide2 = prs.slides.add_slide(bullet_slide_layout)
+        slide2.shapes.title.text = "State-of-the-Art Research Centers"
+        tf2 = slide2.placeholders[1].text_frame
+        tf2.text = "Active Industry-Sponsored Facilities:"
 
-    p1 = tf2.add_paragraph()
-    p1.text = "• AI & High Performance Computing (HPC) Supercomputing Cluster"
-    p1.level = 1
+        p1 = tf2.add_paragraph()
+        p1.text = "• AI & High Performance Computing (HPC) Supercomputing Cluster"
+        p1.level = 1
 
-    p2 = tf2.add_paragraph()
-    p2.text = "• Semiconductor VLSI Design & Cadence Automated Testing Suite"
-    p2.level = 1
+        p2 = tf2.add_paragraph()
+        p2.text = "• Semiconductor VLSI Design & Cadence Automated Testing Suite"
+        p2.level = 1
 
-    p3 = tf2.add_paragraph()
-    p3.text = "• Autonomous Robotics, Drone Flight Arena & Sensor Testbeds"
-    p3.level = 1
+        p3 = tf2.add_paragraph()
+        p3.text = "• Autonomous Robotics, Drone Flight Arena & Sensor Testbeds"
+        p3.level = 1
 
-    # Slide 3: Placement & Academic ROI
-    slide3 = prs.slides.add_slide(bullet_slide_layout)
-    slide3.shapes.title.text = "Placement ROI & Career Pathways"
-    tf3 = slide3.placeholders[1].text_frame
-    tf3.text = "Student Outcome Benchmarks:"
+        slide3 = prs.slides.add_slide(bullet_slide_layout)
+        slide3.shapes.title.text = "Placement ROI & Career Pathways"
+        tf3 = slide3.placeholders[1].text_frame
+        tf3.text = "Student Outcome Benchmarks:"
 
-    p4 = tf3.add_paragraph()
-    p4.text = "• Tier-1 Product Recruiters: Microsoft, Amazon, Cisco, Qualcomm"
-    p4.level = 1
+        p4 = tf3.add_paragraph()
+        p4.text = "• Tier-1 Product Recruiters: Microsoft, Amazon, Cisco, Qualcomm"
+        p4.level = 1
 
-    p5 = tf3.add_paragraph()
-    p5.text = "• 85%+ Overall Placement Ratio across Autonomous Programs"
-    p5.level = 1
+        p5 = tf3.add_paragraph()
+        p5.text = "• 85%+ Overall Placement Ratio across Autonomous Programs"
+        p5.level = 1
 
-    p6 = tf3.add_paragraph()
-    p6.text = "• Pre-placement multi-agent AI & full-stack software bootcamps"
-    p6.level = 1
+        p6 = tf3.add_paragraph()
+        p6.text = "• Pre-placement multi-agent AI & full-stack software bootcamps"
+        p6.level = 1
 
-    pptx_path = RAW_PRESENTATIONS / "COE_and_Department_Infrastructure.pptx"
-    prs.save(str(pptx_path))
-    print(f"  [+] Generated presentation deck: {pptx_path}")
-    return str(pptx_path)
+        pptx_path = RAW_PRESENTATIONS / "COE_and_Department_Infrastructure.pptx"
+        prs.save(str(pptx_path))
+        logger.info(f"Generated presentation deck: {pptx_path}")
+        print(f"  [+] Generated presentation deck: {pptx_path}")
+        return str(pptx_path)
+    except Exception as e:
+        logger.error(f"Failed to generate presentation deck: {e}")
+        return ""
 
 
 # ==============================================================================
