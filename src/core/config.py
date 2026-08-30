@@ -8,7 +8,7 @@ sets up LLM inference keys (Groq / OpenAI / Custom Endpoints), and configures re
 
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -27,7 +27,7 @@ class Settings(BaseSettings):
 
     # --- Application Metadata ---
     APP_NAME: str = "PragyanAI College Intelligence Hub"
-    APP_VERSION: str = "1.0.0"
+    APP_VERSION: str = "2.0.0"
     ENVIRONMENT: str = Field(default="production", validation_alias="ENVIRONMENT")
     DEBUG: bool = Field(default=False, validation_alias="DEBUG")
     SECRET_KEY: str = Field(
@@ -47,7 +47,7 @@ class Settings(BaseSettings):
 
     # --- Relational Database Settings (SQLite / PostgreSQL) ---
     DATABASE_URL: str = Field(
-        default=f"sqlite:///{ROOT_DIR / 'data' / 'college_portal.db'}",
+        default=f"sqlite:///{ROOT_DIR / 'pragyanai_college_hub.db'}",
         validation_alias="DATABASE_URL",
     )
     DB_ECHO_SQL: bool = False
@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     # --- LLM Provider & Inference Engine ---
     GROQ_API_KEY: str = Field(default="", validation_alias="GROQ_API_KEY")
     GROQ_MODEL_NAME: str = Field(
-        default="openai/gpt-oss-120b",
+        default="llama3-70b-8192",
         validation_alias="GROQ_MODEL_NAME",
     )
     OPENAI_API_KEY: Optional[str] = Field(default=None, validation_alias="OPENAI_API_KEY")
@@ -91,7 +91,7 @@ class Settings(BaseSettings):
     STREAMLIT_SERVER_ADDRESS: str = "0.0.0.0"
 
     def ensure_directories(self) -> None:
-        """Verifies and creates all data and asset storage directories."""
+        """Verifies and creates all data and asset storage directories securely."""
         for path in [
             self.DATA_DIR,
             self.RAW_DATA_DIR,
@@ -101,7 +101,10 @@ class Settings(BaseSettings):
             self.SEED_DIR,
             self.VECTOR_STORE_DIR,
         ]:
-            path.mkdir(parents=True, exist_ok=True)
+            try:
+                path.mkdir(parents=True, exist_ok=True)
+            except Exception as e:
+                print(f"Warning: Could not create directory {path}: {e}")
 
 
 # Singleton settings instance initialized for the entire application lifecycle
