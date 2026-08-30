@@ -24,7 +24,7 @@ def render_analytics_reporting_view(current_role: UserRole):
         st.info("Please switch your role to **Corporate Recruiter**, **Dean & Institutional Leadership**, or **System Administrator** using the sidebar.")
         return
 
-    st.title("📊 Institutional Analytics & Comparative Reporting")
+    st.title(" Institutional Analytics & Comparative Reporting")
     st.markdown(
         "Multi-variable benchmarking across entrance exam cutoffs, placement CTC distributions, "
         "and departmental return on investment (ROI)."
@@ -58,17 +58,17 @@ def render_analytics_reporting_view(current_role: UserRole):
     # 2. ANALYTICS TABS
     # =========================================================================
     tab_cutoffs, tab_placements, tab_export = st.tabs([
-        "📈 Cutoff Rank Trends",
-        "💼 Placement Salary Benchmarking",
-        "📥 Export Institutional Reports"
+        "1. Cutoff Rank Trends",
+        "2. Placement Salary Benchmarking",
+        "3. Export Institutional Reports"
     ])
 
     # -------------------------------------------------------------------------
     # TAB 1: CUTOFF RANK TRENDS
     # -------------------------------------------------------------------------
     with tab_cutoffs:
-        st.subheader("🔍 Entrance Exam Cutoff Rank Analyzer (KCET & COMEDK)")
-        st.markdown("Inspect historical and projected cutoff ranks across institutions, engineering branches, and reservation categories.")
+        st.subheader(" Entrance Exam Cutoff Rank Analyzer (KCET & COMEDK)")
+        st.markdown(" Inspect historical and projected cutoff ranks across institutions, engineering branches, and reservation categories.")
 
         col_f1, col_f2, col_f3, col_f4 = st.columns(4)
         with col_f1:
@@ -106,7 +106,7 @@ def render_analytics_reporting_view(current_role: UserRole):
     # TAB 2: PLACEMENT SALARY BENCHMARKING
     # -------------------------------------------------------------------------
     with tab_placements:
-        st.subheader("💼 Cross-College Placement CTC Distribution")
+        st.subheader(" Cross-College Placement CTC Distribution")
         st.markdown("Comparative evaluation of median and peak compensation packages across benchmark engineering colleges.")
 
         df_col = pd.DataFrame([{
@@ -121,14 +121,14 @@ def render_analytics_reporting_view(current_role: UserRole):
 
         st.dataframe(df_col.sort_values(by="NIRF Rank"), use_container_width=True)
 
-        st.markdown("#### 📊 Median CTC Comparison Chart")
+        st.markdown("####  Median CTC Comparison Chart")
         st.bar_chart(df_col.set_index("Short Name")["Median CTC (LPA)"])
 
     # -------------------------------------------------------------------------
     # TAB 3: EXPORT INSTITUTIONAL REPORTS
     # -------------------------------------------------------------------------
     with tab_export:
-        st.subheader("📥 Export Master Institutional Dataset")
+        st.subheader(" Export Master Institutional Dataset")
         st.markdown("Download comprehensive CSV summaries for offline analysis, research evaluations, and administrative board presentations.")
 
         col_ex1, col_ex2 = st.columns(2)
@@ -145,7 +145,7 @@ def render_analytics_reporting_view(current_role: UserRole):
             
             csv_colleges = df_col_export.to_csv(index=False).encode('utf-8')
             st.download_button(
-                label="📊 Download College Benchmarks CSV",
+                label=" Download College Benchmarks CSV",
                 data=csv_colleges,
                 file_name="PragyanAI_College_Benchmarks_2026.csv",
                 mime="text/csv",
@@ -166,7 +166,7 @@ def render_analytics_reporting_view(current_role: UserRole):
 
             csv_students = df_student_export.to_csv(index=False).encode('utf-8')
             st.download_button(
-                label="🎓 Download Student Talent Pool CSV",
+                label=" Download Student Talent Pool CSV",
                 data=csv_students,
                 file_name="PragyanAI_Student_Talent_Pool_2026.csv",
                 mime="text/csv",
