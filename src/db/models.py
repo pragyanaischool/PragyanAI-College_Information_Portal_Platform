@@ -2,7 +2,7 @@
 src/db/models.py
 SQLAlchemy ORM Data Schema for PragyanAI College Intelligence Hub.
 Provides relational mappings for institutional governance, department accreditation,
-faculty research profiles, cutoffs, student records, and event management.
+faculty research profiles, cutoffs, student records, event management, and candidate multi-test profiles.
 """
 
 import uuid
@@ -30,7 +30,10 @@ class College(Base):
     code = Column(String(20), unique=True, nullable=False, index=True)
     name = Column(String(255), nullable=False)
     short_name = Column(String(50), nullable=False)
+    state = Column(String(100), default="Karnataka")
+    district = Column(String(100), default="Bengaluru Urban")
     city = Column(String(100), nullable=False)
+    address = Column(Text)
     established_year = Column(Integer)
     autonomous = Column(Boolean, default=True)
     naac_grade = Column(String(10))
@@ -43,8 +46,10 @@ class College(Base):
     comedk_fee_lakhs = Column(Float)
     median_ctc_lpa = Column(Float)
     highest_ctc_lpa = Column(Float)
+    departments_and_intake = Column(JSON)
     top_recruiters = Column(JSON)
     coas_and_centers_of_excellence = Column(JSON)
+    website_link = Column(String(500))
     video_tour_url = Column(String(500))
     principal_statement = Column(Text)
     alumni_linkedin_hub = Column(String(500))
@@ -213,4 +218,38 @@ class AdmissionLead(Base):
     intent_score = Column(Integer, default=1)  # 1 (Cold) to 5 (High-Priority Direct Escalation)
     query_notes = Column(Text)
     status = Column(String(50), default="New")  # New, Contacted, Verified, Enrolled
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class CandidateProfile(Base):
+    __tablename__ = "candidate_profiles"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    session_id = Column(String(64), index=True, nullable=False)
+
+    # Multi-Test Scores & Marks
+    kcet_rank = Column(Integer, default=0)
+    kcet_marks = Column(Float, default=0.0)
+    comedk_rank = Column(Integer, default=0)
+    comedk_marks = Column(Float, default=0.0)
+    jee_percentile = Column(Float, default=0.0)
+    pessat_rank = Column(Integer, default=0)
+    board_pcm_pct = Column(Float, default=0.0)
+
+    # Branch & Reservation
+    preferred_branch = Column(String(32), default="CSE")
+    category_quota = Column(String(16), default="GM")
+
+    # Geographical & Governance Preferences
+    preferred_city = Column(String(64), default="All Cities")
+    preferred_college_type = Column(String(64), default="All Types")  # Autonomous / State University / VTU Non-Autonomous
+    seat_quota_pathway = Column(String(64), default="Govt Merit Quota (CET)")  # Govt / COMEDK / Management
+
+    # Financial & Placement Salary Ranges (in ₹ Lakhs)
+    max_annual_fee_lakhs = Column(Float, default=15.0)
+    min_median_ctc_lpa = Column(Float, default=8.0)
+    target_highest_ctc_lpa = Column(Float, default=25.0)
+
+    # Ingestion & Metadata
+    profile_summary_text = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
