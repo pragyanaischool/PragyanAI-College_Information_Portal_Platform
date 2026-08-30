@@ -106,28 +106,33 @@ def render_welcome_dashboard(active_role: UserRole):
         st.metric("Active RAG AI Sessions", "1,840 Daily", "99.4% Accuracy")
 
     st.markdown("---")
-    st.markdown("###  Master College Directory & Institutional Types Explained")
+    st.markdown("### 🏛️ Master College Directory & Institutional Types Explained")
     
     # Educational Glossary Expander on Main Page
-    with st.expander(" Glossary: Understanding University, Autonomous, and Affiliated Colleges"):
+    with st.expander("📖 Glossary: Understanding University, Autonomous, and Affiliated Colleges"):
         st.markdown(
             """
-            -  **University (Deemed / State / Private):** 
+            - 🏛️ **University (Deemed / State / Private):** 
               Universities possess statutory authority to design their own curriculums, conduct exams, and award degrees under their own seal.
-            -  **Autonomous Colleges:** 
+            - ⚙️ **Autonomous Colleges:** 
               Affiliated with a parent university (e.g., VTU) but granted academic freedom to update their syllabi, conduct internal assessments, and introduce cutting-edge tech tracks (AI/GenAI) rapidly.
-            -  **University Affiliated (Non-Autonomous):** 
+            - 🔗 **University Affiliated (Non-Autonomous):** 
               Colleges that strictly adhere to the rigid curriculum, exam calendars, and evaluation guidelines prescribed by the central affiliating university.
             """
         )
 
-    # Embed Live College Directory Search & Filters directly into Welcome Dashboard for visibility
+    # Embed Live College Directory Search & Filters safely via dynamic importlib (avoiding numeric filename import errors)
     try:
-        from src.ui.views.16_College_Search_Directory import render_college_search_directory_view
+        dir_module = importlib.import_module("src.ui.views.16_College_Search_Directory")
         st.markdown("### 🔍 Filter Colleges by State, District, City & Type")
-        render_college_search_directory_view()
+        dir_module.render_college_search_directory_view()
     except Exception:
-        pass
+        try:
+            dir_module = importlib.import_module("src.ui.views.college_search_directory")
+            st.markdown("### 🔍 Filter Colleges by State, District, City & Type")
+            dir_module.render_college_search_directory_view()
+        except Exception:
+            pass
 
     st.markdown("---")
 
@@ -155,12 +160,12 @@ def main():
     # Live Database Status Monitor
     is_db_connected = check_db_health()
     if is_db_connected:
-        st.sidebar.caption(" **Database Status:** Connected (Active)")
+        st.sidebar.caption("🟢 **Database Status:** Connected (Active)")
     else:
-        st.sidebar.caption(" **Database Status:** Standby Mode")
+        st.sidebar.caption("🟡 **Database Status:** Standby Mode")
 
     st.sidebar.markdown("---")
-    st.sidebar.subheader(" Role-Based Navigation")
+    st.sidebar.subheader("🧭 Role-Based Navigation")
 
     # STRICT Persona-Based Navigation Menus
     if active_role in [UserRole.ADMIN, UserRole.LEADERSHIP]:
@@ -203,13 +208,16 @@ def main():
         key="role_navigation_selector"
     )
 
-    # Dynamic Persona & Navigation View Routing
+    # Dynamic Persona & Navigation View Routing (fully safe against numeric filenames)
     try:
         if "Welcome Dashboard" in view_selection:
             render_welcome_dashboard(active_role)
 
         elif "Admin College Master Editor" in view_selection:
-            view_module = importlib.import_module("src.ui.views.17_Admin_College_Editor")
+            try:
+                view_module = importlib.import_module("src.ui.views.17_Admin_College_Editor")
+            except ModuleNotFoundError:
+                view_module = importlib.import_module("src.ui.views.admin_college_editor")
             view_module.render_admin_college_editor_view()
 
         elif "AI Decision Hub & Aspirant Desk" in view_selection:
@@ -217,11 +225,17 @@ def main():
             view_module.render_aspirant_view()
 
         elif "College Search & Advanced Directory" in view_selection:
-            view_module = importlib.import_module("src.ui.views.16_College_Search_Directory")
+            try:
+                view_module = importlib.import_module("src.ui.views.16_College_Search_Directory")
+            except ModuleNotFoundError:
+                view_module = importlib.import_module("src.ui.views.college_search_directory")
             view_module.render_college_search_directory_view()
 
         elif "Student College Deep-Dive" in view_selection:
-            view_module = importlib.import_module("src.ui.views.15_Student_College_Deep_Dive")
+            try:
+                view_module = importlib.import_module("src.ui.views.15_Student_College_Deep_Dive")
+            except ModuleNotFoundError:
+                view_module = importlib.import_module("src.ui.views.student_college_deep_dive")
             view_module.render_student_college_deep_dive_view()
 
         elif "College Deep-Dive" in view_selection:
@@ -280,13 +294,9 @@ def main():
             view_module = importlib.import_module("src.ui.views.1_Aspirant_Desk")
             view_module.render_aspirant_view()
 
-    except ModuleNotFoundError as err:
-        st.error(f"Error loading view module for persona '{active_role}': {err}")
-        st.info("Verify that all required view files exist in `src/ui/views/`.")
     except Exception as ex:
         st.error(f"Unexpected error rendering view: {ex}")
 
 
 if __name__ == "__main__":
     main()
-    
