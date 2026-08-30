@@ -181,7 +181,7 @@ STAKEHOLDER_REPOSITORIES = {
 
 
 def _fetch_all_colleges_as_dicts() -> List[Dict[str, Any]]:
-    """Loads all colleges and serializes them completely into plain dictionaries inside the active session."""
+    """Loads all colleges and serializes them safely into plain dictionaries inside the active session."""
     with get_db() as db:
         colleges = db.query(College).order_by(College.nirf_rank_2025.asc()).all()
         result = []
@@ -195,6 +195,9 @@ def _fetch_all_colleges_as_dicts() -> List[Dict[str, Any]]:
                 affil = "Autonomous (VTU Affiliated)"
             else:
                 affil = "VTU Affiliated (Non-Autonomous)"
+
+            depts_raw = getattr(c, "departments_and_intake", None)
+            depts_dict = dict(depts_raw) if isinstance(depts_raw, dict) else {}
 
             result.append({
                 "id": str(getattr(c, "id", "") or ""),
@@ -218,7 +221,7 @@ def _fetch_all_colleges_as_dicts() -> List[Dict[str, Any]]:
                 "comedk_fee_lakhs": float(getattr(c, "comedk_fee_lakhs", 2.81) or 2.81),
                 "median_ctc_lpa": float(getattr(c, "median_ctc_lpa", 8.0) or 8.0),
                 "highest_ctc_lpa": float(getattr(c, "highest_ctc_lpa", 25.0) or 25.0),
-                "departments_and_intake": getattr(c, "departments_and_intake", None),
+                "departments_and_intake": depts_dict,
                 "website_link": str(getattr(c, "website_link", "") or "https://cetonline.karnataka.gov.in/kea/"),
                 "principal_statement": str(getattr(c, "principal_statement", "") or ""),
             })
@@ -398,7 +401,7 @@ def render_step1_score_input():
                 ),
             }
 
-            # Ingest to SQL Database (with automatic fallback to Model instantiation)
+            # Ingest to SQL Database (with fallback)
             try:
                 with get_db() as db:
                     repo = CollegeRepository(db)
