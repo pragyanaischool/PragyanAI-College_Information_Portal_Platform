@@ -6,7 +6,6 @@ PragyanAI College Intelligence & Decision Portal.
 """
 
 import importlib
-import os
 import sys
 from pathlib import Path
 import streamlit as st
@@ -34,17 +33,14 @@ def bootstrap_application():
 
     automatic seeding if tables or benchmark records are missing.
     """
-    # Ensure all required folders exist (data/raw/, data/seed/, data/vector_store/)
     settings.ensure_directories()
 
-    # Create all tables defined in SQLAlchemy models
     try:
         init_db()
     except Exception as exc:
         st.error(f"Database schema initialization notice: {exc}")
         return
 
-    # Check whether the 'colleges' table exists and contains data
     try:
         inspector = inspect(engine)
         existing_tables = inspector.get_table_names()
@@ -67,7 +63,6 @@ def bootstrap_application():
                 )
                 from src.db.seed_runner import seed_database
 
-                # Generate seed CSV files if missing, then populate database
                 generate_cutoffs_csv()
                 generate_students_csv()
                 seed_database()
@@ -80,7 +75,6 @@ def bootstrap_application():
 # 3. Main Application Flow
 # -----------------------------------------------------------------------------
 def main():
-    # Streamlit Global Page Configuration
     st.set_page_config(
         page_title="PragyanAI College Intelligence Hub",
         page_icon="🏛️",
@@ -88,42 +82,56 @@ def main():
         initial_sidebar_state="expanded",
     )
 
-    # Inject CSS Theme Tokens & Metric Card Styling
     inject_custom_css()
-
-    # Self-healing Application Initialization
     bootstrap_application()
 
-    # Render Persona Switcher & Language Selector on Sidebar
+    # Render Persona Switcher & Sidebar Auth
     active_role = render_auth_sidebar()
 
     # Live Database Status Monitor
     is_db_connected = check_db_health()
     if is_db_connected:
-        st.sidebar.caption(" **Database Status:** Connected (Active)")
+        st.sidebar.caption("🟢 **Database Status:** Connected (Active)")
     else:
-        st.sidebar.caption(" **Database Status:** In-Memory / Standby Mode")
+        st.sidebar.caption("🟡 **Database Status:** In-Memory / Standby Mode")
 
-    # Dynamic Persona View Routing
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("🧭 Platform Navigation")
+
+    view_selection = st.sidebar.radio(
+        "Select Portal View",
+        [
+            "💬 AI Decision Hub & Aspirant Desk",
+            "🏛️ College Master Hub & Showcase",
+            "📊 Institutional Analytics & Reports",
+            "🏛️ Dean & Leadership Governance",
+        ],
+        key="main_navigation_selector"
+    )
+
+    # Dynamic Persona & Navigation View Routing
     try:
-        if active_role in [UserRole.GUEST.value, UserRole.ASPIRANT.value]:
-            view_module = importlib.import_module("src.ui.views.1_Aspirant_Desk")
-            view_module.render_aspirant_view()
+        if "College Master Hub" in view_selection:
+            view_module = importlib.import_module("src.ui.views.6_College_Master_Hub")
+            view_module.render_college_master_hub_view()
 
-        elif active_role == UserRole.SCHOOL_PARTNER.value:
+        elif "Institutional Analytics" in view_selection:
+            view_module = importlib.import_module("src.ui.views.5_Analytics_Reporting_View")
+            view_module.render_analytics_reporting_view(active_role)
+
+        elif "Dean & Leadership" in view_selection or active_role in [UserRole.LEADERSHIP, UserRole.ADMIN]:
+            view_module = importlib.import_module("src.ui.views.4_Leadership_View")
+            view_module.render_leadership_view(active_role)
+
+        elif active_role == UserRole.SCHOOL_PARTNER:
             view_module = importlib.import_module("src.ui.views.2_School_Partner")
             view_module.render_school_partner_view()
 
-        elif active_role == UserRole.RECRUITER.value:
+        elif active_role == UserRole.RECRUITER:
             view_module = importlib.import_module("src.ui.views.3_Recruiter_Desk")
             view_module.render_recruiter_view()
 
-        elif active_role == UserRole.LEADERSHIP.value:
-            view_module = importlib.import_module("src.ui.views.4_Leadership_View")
-            view_module.render_leadership_view()
-
         else:
-            # Fallback default view
             view_module = importlib.import_module("src.ui.views.1_Aspirant_Desk")
             view_module.render_aspirant_view()
 
