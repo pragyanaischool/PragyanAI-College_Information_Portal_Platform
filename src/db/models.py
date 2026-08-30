@@ -3,7 +3,8 @@ src/db/models.py
 
 SQLAlchemy ORM Data Schema for PragyanAI College Intelligence Hub.
 Provides relational mappings for institutional governance, department accreditation,
-faculty research profiles, cutoffs, student records, event management, and candidate multi-test profiles.
+faculty research profiles, cutoffs, student records, event management, candidate multi-test profiles,
+and published institutional profile records.
 """
 
 import logging
@@ -99,7 +100,6 @@ class Department(Base):
     faculties = relationship("Faculty", back_populates="department", cascade="all, delete-orphan")
 
     def __init__(self, **kwargs):
-        # Guarantee fallback lists if kwargs don't include them
         if "centers_of_excellence" not in kwargs or not kwargs["centers_of_excellence"]:
             kwargs["centers_of_excellence"] = [
                 "AI & High Performance Computing (HPC) Lab",
@@ -280,6 +280,50 @@ class CandidateProfile(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
+class CollegePublishedProfile(Base):
+    """Stores complete published institutional profiles, governance details, accreditations, and HOD directories."""
+    __tablename__ = "college_published_profiles"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    college_code = Column(String(20), unique=True, nullable=False, index=True)
+    college_name = Column(String(255), nullable=False)
+    city = Column(String(100), default="Bengaluru")
+    naac_grade = Column(String(50), default="A++ (CGPA 3.64)")
+    nirf_rank = Column(Integer, default=38)
+    median_ctc = Column(Float, default=14.5)
+    highest_ctc = Column(Float, default=55.0)
+    placement_rate = Column(Float, default=96.5)
+    
+    # Governance & Leadership Statements
+    principal_name = Column(String(150), default="Dr. Ramesh Chandra")
+    principal_statement = Column(Text, default="Cultivating rigorous technical competency, ethical leadership, and deep-tech research execution.")
+    institutional_vision = Column(Text, default="Excellence in autonomous deep-tech research and AI innovation.")
+    
+    # Department HOD Directories
+    hod_cse = Column(String(255), default="Dr. Anand Kumar (Ph.D. IISc)")
+    hod_aids = Column(String(255), default="Dr. Sunita Murthy (Ph.D. IITM)")
+    hod_ece = Column(String(255), default="Dr. V. K. Hebbar (Ph.D. NITK)")
+    
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+
+class RecruiterJobPosting(Base):
+    """Stores recruiter job descriptions, expressions of interest, and TPO communications."""
+    __tablename__ = "recruiter_job_postings"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    college_code = Column(String(20), index=True, nullable=False)
+    company_name = Column(String(150), nullable=False)
+    recruiter_name = Column(String(150), nullable=False)
+    recruiter_email = Column(String(150), nullable=False)
+    target_role = Column(String(150), nullable=False)
+    ctc_range = Column(String(100), nullable=True)
+    drive_date = Column(String(50), nullable=True)
+    jd_filename = Column(String(255), nullable=True)
+    message_to_tpo = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
 __all__ = [
     "Base",
     "College",
@@ -292,5 +336,7 @@ __all__ = [
     "EventRegistration",
     "AdmissionLead",
     "CandidateProfile",
+    "CollegePublishedProfile",
+    "RecruiterJobPosting",
 ]
 
