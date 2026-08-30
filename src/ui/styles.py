@@ -8,7 +8,7 @@ import streamlit as st
 
 
 def inject_custom_css():
-    """Injects responsive enterprise CSS variables and card styles."""
+    """Injects responsive enterprise CSS variables, card styles, and branding rules."""
     st.markdown(
         """
         <style>
@@ -102,6 +102,18 @@ def inject_custom_css():
             font-size: 0.75rem;
             font-weight: 700;
         }
+
+        /* Enterprise Header & Logo Enhancements */
+        .brand-header-container {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
         </style>
         """,
         unsafe_allow_html=True,
@@ -122,3 +134,4 @@ def render_metric_card(title: str, value: str, delta: str = "", positive: bool =
         """,
         unsafe_allow_html=True,
     )
+    
