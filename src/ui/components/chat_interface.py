@@ -22,8 +22,8 @@ except ImportError:
     HAS_RETRIEVER = False
 
 
-def render_multimodal_chat():
-    """Renders the conversational text and voice chat interface for college intelligence."""
+def render_multimodal_chat(key: str = "default_multimodal_chat_input"):
+    """Renders the conversational text and voice chat interface with a unique key to prevent ID collisions."""
     st.subheader("🤖 Multimodal College Intelligence Assistant")
     st.caption("Ask questions in natural language regarding rank cutoffs, management fees, NIRF metrics, scholarship criteria, or free bootcamps.")
 
@@ -45,8 +45,11 @@ def render_multimodal_chat():
                 if "audio_bytes" in msg and msg["audio_bytes"]:
                     st.audio(msg["audio_bytes"], format="audio/mp3")
 
-    # User input handling
-    user_query = st.chat_input("Ask about cutoffs, fees, or top colleges (e.g., 'Which college should I select for CSE under 5000 rank?')...")
+    # User input handling with unique key parameter
+    user_query = st.chat_input(
+        "Ask about cutoffs, fees, or top colleges (e.g., 'Which college should I select for CSE under 5000 rank?')...",
+        key=key
+    )
 
     if user_query:
         # Append user message
