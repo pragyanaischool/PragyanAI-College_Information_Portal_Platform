@@ -50,6 +50,11 @@ class College(Base):
     comedk_fee_lakhs = Column(Float)
     median_ctc_lpa = Column(Float)
     highest_ctc_lpa = Column(Float)
+    
+    # --- New Institutional Governance Fields ---
+    vision = Column(Text)
+    mission = Column(Text)
+
     departments_and_intake = Column(JSON)
     top_recruiters = Column(JSON)
     coas_and_centers_of_excellence = Column(JSON)
@@ -81,6 +86,12 @@ class Department(Base):
     funded_grants_lakhs = Column(Float, default=0.0)
     patents_filed = Column(Integer, default=0)
     nba_status = Column(String(50), default="Accredited Tier-1")
+    
+    # --- New Departmental Intelligence Fields ---
+    centers_of_excellence = Column(JSON)
+    skill_programs = Column(JSON)
+    notable_alumni = Column(JSON)
+
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
@@ -276,3 +287,4 @@ __all__ = [
     "AdmissionLead",
     "CandidateProfile",
 ]
+
