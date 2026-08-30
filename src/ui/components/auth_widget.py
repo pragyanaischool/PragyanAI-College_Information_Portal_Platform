@@ -14,11 +14,11 @@ def render_auth_sidebar() -> UserRole:
     st.sidebar.markdown("---")
     st.sidebar.subheader("🔐 Access & Persona Hub")
 
-    # Initialize session state variables safely
+    # Initialize session state variables safely using valid UserRole enums
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = False
         st.session_state.user_email = ""
-        st.session_state.user_role = UserRole.ASPIRANT  # Fixed from UserRole.STUDENT
+        st.session_state.user_role = UserRole.ASPIRANT  # Fixed: UserRole.STUDENT -> UserRole.ASPIRANT
         st.session_state.user_name = "Guest Aspirant"
 
     if not st.session_state.logged_in:
