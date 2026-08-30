@@ -1,13 +1,14 @@
 """
-src/ui/views/1_🎓_Aspirant_Desk.py
+src/ui/views/1_Aspirant_Desk.py
 
 Student and Parent Aspirant Journey:
-- Guided 5-Step Progress Pipeline Indicator
-- Step 1: 📝 Multi-Test Score & Rank Profiler (KCET, COMEDK, JEE, Boards & Scorecard PDF OCR)
-- Step 2: 🎯 Cutoff Profiler, City/Affiliation Types & Top Recommendations (+ 4-Year Educational ROI)
-- Step 3: ⚖️ Side-by-Side College Comparison (Select from Recommended Matches)
-- Step 4: 🏛️ Institutional Knowledge Directory, Verified Direct Portals & PDF Downloads
-- Step 5: 🗣️ Voice of Stakeholders (Alumni, Students, Recruiters, Principal & HOD Quotes/Bites)
+- Guided 6-Step Interactive Progress Pipeline Indicator
+- Step 1: Multi-Test Score & Rank Profiler (KCET, COMEDK, JEE, Boards & Scorecard PDF OCR)
+- Step 2: Cutoff Profiler, City/Affiliation Types & Top Recommendations (+ 4-Year Educational ROI)
+- Step 3: Side-by-Side College Comparison (Select from Recommended Matches)
+- Step 4: State, District & City-Wise College Directory Explorer (Departments, Intakes & Full Addresses)
+- Step 5: Institutional Knowledge Directory, Verified Direct Portals & PDF Downloads
+- Step 6: Voice of Stakeholders (Alumni, Students, Recruiters, Principal & HOD Quotes/Bites)
 - Dedicated Counseling Desk: ✍️ Direct Admission Inquiry & Seat Reservation
 - Multimodal Voice-Enabled College AI Assistant
 """
@@ -21,6 +22,7 @@ from src.core.database import get_db
 from src.db.generate_data_files import generate_raw_documents
 from src.db.repository import CollegeRepository
 from src.ui.components.chat_interface import render_multimodal_chat
+from src.ui.components.college_directory_explorer import render_college_directory_explorer
 from src.ui.components.cutoff_explorer import (
     render_step1_score_input,
     render_step2_profiler_and_recommendations,
@@ -33,16 +35,17 @@ from src.ui.styles import inject_custom_css, render_metric_card
 
 
 def render_step_progress_indicator(current_step: int = 1):
-    """Renders a modern 5-step interactive progress tracker."""
+    """Renders a modern 6-step interactive progress tracker."""
     steps = [
         ("1", "Score Input", "Multi-Test Scores"),
         ("2", "Profiler & Match", "Fees & Top Matches"),
         ("3", "Compare Colleges", "Side-by-Side Matrix"),
-        ("4", "Official Portals", "Direct Directories"),
-        ("5", "Stakeholder Voices", "Alumni & Recruiter Bites"),
+        ("4", "Directory Explorer", "State / District / City"),
+        ("5", "Official Portals", "Direct Directories"),
+        ("6", "Stakeholder Voices", "Alumni & Recruiter Bites"),
     ]
 
-    cols = st.columns(5)
+    cols = st.columns(6)
     for idx, (num, title, subtitle) in enumerate(steps):
         step_num = idx + 1
         with cols[idx]:
@@ -65,13 +68,13 @@ def render_step_progress_indicator(current_step: int = 1):
                     background: #ffffff;
                     border: {border_style};
                     border-radius: 10px;
-                    padding: 0.65rem;
+                    padding: 0.55rem;
                     text-align: center;
                     box-shadow: 0 2px 4px rgba(0,0,0,0.03);
                     min-height: 85px;
                 ">
                     <div style="
-                        width: 24px; height: 24px;
+                        width: 22px; height: 22px;
                         background: {bg_color};
                         color: #ffffff;
                         border-radius: 50%;
@@ -79,11 +82,11 @@ def render_step_progress_indicator(current_step: int = 1):
                         align-items: center;
                         justify-content: center;
                         font-weight: 700;
-                        font-size: 0.8rem;
+                        font-size: 0.78rem;
                         margin-bottom: 0.2rem;
                     ">{badge}</div>
-                    <div style="font-weight: 700; font-size: 0.82rem; color: #0f172a;">{title}</div>
-                    <div style="font-size: 0.7rem; color: #64748b;">{subtitle}</div>
+                    <div style="font-weight: 700; font-size: 0.78rem; color: #0f172a;">{title}</div>
+                    <div style="font-size: 0.68rem; color: #64748b;">{subtitle}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -102,7 +105,7 @@ def render_aspirant_view():
                 🎓 Student & Parent Decision Gateway
             </h1>
             <p style="color: #64748b; font-size: 0.95rem; margin-top: 0;">
-                Follow the 5-step guided path to evaluate admission cutoffs across multiple tests, benchmark institutional ROI, review verified fees, compare colleges, and secure counseling.
+                Follow the guided roadmap to evaluate cutoffs across entrance exams, explore state/district college directories, benchmark ROI, compare institutions, and secure counseling.
             </p>
         </div>
         """,
@@ -131,16 +134,17 @@ def render_aspirant_view():
     st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 
     # -------------------------------------------------------------------------
-    # Tab Workspace Menu (5 Steps + Direct Counseling + AI Assistant)
+    # Tab Workspace Menu (Steps + Geo Directory + Counseling + AI Assistant)
     # -------------------------------------------------------------------------
-    tab_step1, tab_step2, tab_step3, tab_step4, tab_step5, tab_lead, tab_ai = st.tabs([
-        "📝 Step 1: Score Profiler",
-        "🎯 Step 2: Recommendations & ROI",
-        "⚖️ Step 3: Compare Colleges",
-        "🏛️ Step 4: Official Portals & PDFs",
-        "🗣️ Step 5: Stakeholder Voices",
-        "✍️ Direct Counseling & Quota Lock",
-        "🤖 Voice & Multimodal AI Guide",
+    tab_step1, tab_step2, tab_step3, tab_directory, tab_step4, tab_step5, tab_lead, tab_ai = st.tabs([
+        " Step 1: Score Profiler",
+        " Step 2: Recommendations & ROI",
+        " Step 3: Compare Colleges",
+        " Step 4: College Directory Explorer",
+        " Step 5: Official Portals & PDFs",
+        " Step 6: Stakeholder Voices",
+        " Direct Counseling & Quota Lock",
+        " Voice & Multimodal AI Guide",
     ])
 
     # -------------------------------------------------------------------------
@@ -148,12 +152,12 @@ def render_aspirant_view():
     # -------------------------------------------------------------------------
     with tab_step1:
         st.session_state.aspirant_journey_step = 1
-        
+
         # Multi-Test Manual Score Inputs (KCET, COMEDK, JEE, Boards)
         render_step1_score_input()
 
         # Optional Scorecard OCR / Text Extraction Card
-        with st.expander("📄 Or upload your KCET / COMEDK Scorecard PDF for instant auto-read:", expanded=False):
+        with st.expander(" Or upload your KCET / COMEDK Scorecard PDF for instant auto-read:", expanded=False):
             uploaded_scorecard = st.file_uploader(
                 "Upload Scorecard (PDF):",
                 type=["pdf"],
@@ -188,7 +192,7 @@ def render_aspirant_view():
     # -------------------------------------------------------------------------
     with tab_step2:
         st.session_state.aspirant_journey_step = 2
-        
+
         # Renders Admission Profiler with Affiliation (Autonomous/VTU/Deemed), City, Fees & Recommendations
         render_step2_profiler_and_recommendations()
 
@@ -211,7 +215,7 @@ def render_aspirant_view():
     # -------------------------------------------------------------------------
     with tab_step3:
         st.session_state.aspirant_journey_step = 3
-        
+
         # Side-by-side comparison pre-filled with top matches
         render_step3_side_by_side_comparison()
 
@@ -221,21 +225,40 @@ def render_aspirant_view():
                 st.session_state.aspirant_journey_step = 2
                 st.rerun()
         with col_nav_next3:
-            if st.button("Next: Official Portals & PDFs ➡️", key="btn_next_step4"):
+            if st.button("Next: Directory Explorer ➡️", key="btn_next_to_directory"):
                 st.session_state.aspirant_journey_step = 4
                 st.rerun()
 
     # -------------------------------------------------------------------------
-    # TAB 4: Step 4 - Institutional Knowledge Directory, Direct Portals & PDFs
+    # TAB 4: Step 4 - State-wise, District-wise & City-wise Directory Explorer
+    # -------------------------------------------------------------------------
+    with tab_directory:
+        st.session_state.aspirant_journey_step = 4
+
+        # Renders State, District, City, Address, Intakes & CET Codes Explorer
+        render_college_directory_explorer()
+
+        col_nav_prev_d, col_nav_next_d = st.columns([1, 1])
+        with col_nav_prev_d:
+            if st.button("⬅️ Back to Step 3 (Comparison)", key="btn_back_to_3_from_dir"):
+                st.session_state.aspirant_journey_step = 3
+                st.rerun()
+        with col_nav_next_d:
+            if st.button("Next: Official Portals & PDFs ➡️", key="btn_next_step5_from_dir"):
+                st.session_state.aspirant_journey_step = 5
+                st.rerun()
+
+    # -------------------------------------------------------------------------
+    # TAB 5: Step 5 - Institutional Knowledge Directory, Direct Portals & PDFs
     # -------------------------------------------------------------------------
     with tab_step4:
-        st.session_state.aspirant_journey_step = 4
-        
+        st.session_state.aspirant_journey_step = 5
+
         # Direct Web Portals Directory (Admissions, KEA matrix, Placements)
         render_step4_knowledge_directory()
 
         st.markdown("---")
-        st.subheader("📥 Official Brochures, Fee Matrix & Campus Discovery")
+        st.subheader(" Official Brochures, Fee Matrix & Campus Discovery")
         st.caption("Download institutional brochures and view virtual walkthroughs of Centers of Excellence.")
 
         col_docs, col_video = st.columns([1, 1])
@@ -249,11 +272,11 @@ def render_aspirant_view():
             generate_raw_documents()
 
         with col_docs:
-            st.markdown("#### 📄 Verified Institutional Publications")
+            st.markdown("####  Verified Institutional Publications")
             if flyer_path.exists():
                 with open(flyer_path, "rb") as f_brochure:
                     st.download_button(
-                        "📄 Download Management Quota Fee Flyer (PDF)",
+                        " Download Management Quota Fee Flyer (PDF)",
                         data=f_brochure.read(),
                         file_name="Management_Fee_Structure_2026.pdf",
                         mime="application/pdf",
@@ -263,7 +286,7 @@ def render_aspirant_view():
             if roi_path.exists():
                 with open(roi_path, "rb") as f_roi:
                     st.download_button(
-                        "📈 Download 4-Year Salary ROI Report (PDF)",
+                        " Download 4-Year Salary ROI Report (PDF)",
                         data=f_roi.read(),
                         file_name="Placement_ROI_Report_2026.pdf",
                         mime="application/pdf",
@@ -271,48 +294,48 @@ def render_aspirant_view():
                     )
 
             st.info(
-                "💡 **Merit Concession Note:** Top 2,000 KCET & Top 1,500 COMEDK rank holders "
+                " **Merit Concession Note:** Top 2,000 KCET & Top 1,500 COMEDK rank holders "
                 "qualify for up to a 50% tuition scholarship under institutional quotas."
             )
 
         with col_video:
-            st.markdown("#### 🎥 Virtual Labs & Campus Discovery Tour")
+            st.markdown("####  Virtual Labs & Campus Discovery Tour")
             st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
         col_nav_prev4, col_nav_next4 = st.columns([1, 1])
         with col_nav_prev4:
-            if st.button("⬅️ Back to Step 3 (Comparison)", key="btn_back_to_3"):
-                st.session_state.aspirant_journey_step = 3
+            if st.button("⬅️ Back to Step 4 (Directory)", key="btn_back_to_dir_from_portals"):
+                st.session_state.aspirant_journey_step = 4
                 st.rerun()
         with col_nav_next4:
-            if st.button("Next: Stakeholder Voices ➡️", key="btn_next_step5"):
-                st.session_state.aspirant_journey_step = 5
+            if st.button("Next: Stakeholder Voices ➡️", key="btn_next_step6"):
+                st.session_state.aspirant_journey_step = 6
                 st.rerun()
 
     # -------------------------------------------------------------------------
-    # TAB 5: Step 5 - Voice of the Stakeholders (Alumni, Students, Recruiters, Leadership)
+    # TAB 6: Step 6 - Voice of the Stakeholders (Alumni, Students, Recruiters, Leadership)
     # -------------------------------------------------------------------------
     with tab_step5:
-        st.session_state.aspirant_journey_step = 5
-        
+        st.session_state.aspirant_journey_step = 6
+
         # Multimodal Stakeholder Perspectives with LinkedIn URLs, Video/Audio Bites & Statements
         render_step5_stakeholder_voices()
 
         col_nav_prev5, col_nav_next5 = st.columns([1, 1])
         with col_nav_prev5:
-            if st.button("⬅️ Back to Step 4 (Portals)", key="btn_back_to_4"):
-                st.session_state.aspirant_journey_step = 4
+            if st.button("⬅️ Back to Step 5 (Portals)", key="btn_back_to_5"):
+                st.session_state.aspirant_journey_step = 5
                 st.rerun()
         with col_nav_next5:
             if st.button("Next: Connect with Admissions ➡️", key="btn_next_to_lead"):
-                st.session_state.aspirant_journey_step = 5
+                st.session_state.aspirant_journey_step = 6
                 st.rerun()
 
     # -------------------------------------------------------------------------
-    # TAB 6: Direct Counseling & Admission Lead Form
+    # TAB 7: Direct Counseling & Admission Lead Form
     # -------------------------------------------------------------------------
     with tab_lead:
-        st.subheader("✍️ Lock In Direct Admission & Counseling Support")
+        st.subheader(" Lock In Direct Admission & Counseling Support")
         st.caption("Connect directly with the college admissions directorate for seat allocation, scholarships, and fee concessions.")
 
         with st.form("aspirant_guided_lead_form"):
@@ -352,7 +375,7 @@ def render_aspirant_view():
             )
 
             submit_inquiry = st.form_submit_button(
-                "🚀 Submit Inquiry & Request Direct Callback",
+                " Submit Inquiry & Request Direct Callback",
                 type="primary",
                 use_container_width=True,
             )
@@ -375,12 +398,12 @@ def render_aspirant_view():
                                 "intent_score": 5 if "Management" in adm_type else 3,
                                 "query_notes": notes,
                             })
-                        st.success("🎉 Your admission inquiry has been logged! The Admissions Directorate will contact you shortly.")
+                        st.success(" Your admission inquiry has been logged! The Admissions Directorate will contact you shortly.")
                     except Exception as err:
                         st.error(f"Error submitting inquiry: {err}")
 
     # -------------------------------------------------------------------------
-    # TAB 7: Conversational Voice/Text AI Assistant
+    # TAB 8: Conversational Voice/Text AI Assistant
     # -------------------------------------------------------------------------
     with tab_ai:
         render_multimodal_chat()
