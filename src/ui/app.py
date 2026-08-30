@@ -98,16 +98,19 @@ def main():
     st.sidebar.markdown("---")
     st.sidebar.subheader("🧭 Platform Navigation")
 
+    # Universal navigation list available across all user roles
+    view_options = [
+        "💬 AI Decision Hub & Aspirant Desk",
+        "🏛️ College Master Hub & Showcase",
+        "📊 Institutional Analytics & Reports",
+        "🏛️ Dean & Leadership Governance",
+        "👥 Student Inquiries & Engagement",
+        "🤖 AI RAG Chat & Profile Advisor",
+    ]
+
     view_selection = st.sidebar.radio(
         "Select Portal View",
-        [
-            "💬 AI Decision Hub & Aspirant Desk",
-            "🏛️ College Master Hub & Showcase",
-            "📊 Institutional Analytics & Reports",
-            "🏛️ Dean & Leadership Governance",
-            "👥 Student Inquiries & Engagement",
-            "🤖 AI RAG Profile Optimizer",
-        ],
+        view_options,
         key="main_navigation_selector"
     )
 
@@ -129,7 +132,7 @@ def main():
             view_module = importlib.import_module("src.ui.views.7_Student_Engagement_Hub")
             view_module.render_student_engagement_view(active_role)
 
-        elif "AI RAG Profile Optimizer" in view_selection:
+        elif "AI RAG Chat" in view_selection:
             view_module = importlib.import_module("src.ui.views.8_AI_Admissions_RAG_Advisor")
             view_module.render_ai_rag_advisor_view(active_role)
 
@@ -154,3 +157,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
