@@ -2,7 +2,7 @@
 src/ui/components/chat_interface.py
 
 Multimodal Conversational AI Assistant Component for PragyanAI College Intelligence Platform.
-Supports natural language queries, audio voice recording inputs, vector RAG context, and speech synthesis responses.
+Supports natural language queries, audio voice recording inputs, vector/SQL context, and speech synthesis responses.
 """
 
 import os
@@ -10,8 +10,16 @@ from typing import Any, Dict, List, Optional
 import streamlit as st
 
 from src.core.config import settings
-from src.rag_engine.retriever import CollegeRetriever
+from src.core.database import get_db
+from src.db.models import College
 from src.utils.audio_tts import synthesize_speech_bytes
+
+# Optional safe import for vector search retriever if available
+try:
+    from src.rag_engine.retriever import CollegeRetriever
+    HAS_RETRIEVER = True
+except ImportError:
+    HAS_RETRIEVER = False
 
 
 def render_multimodal_chat():
@@ -37,7 +45,7 @@ def render_multimodal_chat():
                 if "audio_bytes" in msg and msg["audio_bytes"]:
                     st.audio(msg["audio_bytes"], format="audio/mp3")
 
-    # User input handling (Text + Optional Audio voice prompt simulation)
+    # User input handling
     user_query = st.chat_input("Ask about cutoffs, fees, or top colleges (e.g., 'Which college should I select for CSE under 5000 rank?')...")
 
     if user_query:
@@ -46,21 +54,32 @@ def render_multimodal_chat():
         with st.chat_message("user"):
             st.markdown(user_query)
 
-        # Retrieve RAG context & generate assistant response
+        # Retrieve context & generate assistant response
         with st.chat_message("assistant"):
-            with st.spinner("Analyzing institutional vector database and cutoffs..."):
+            with st.spinner("Analyzing institutional database and cutoffs..."):
+                context_text = ""
                 try:
-                    retriever = CollegeRetriever()
-                    rag_results = retriever.search(user_query, k=3)
-                    context_text = "\n".join([doc.get("text", "") for doc in rag_results]) if rag_results else "No specific documents found."
+                    if HAS_RETRIEVER:
+                        retriever = CollegeRetriever()
+                        rag_results = retriever.search(user_query, k=3)
+                        if rag_results:
+                            context_text = "\n".join([doc.get("text", "") for doc in rag_results])
+                    
+                    # Fallback or supplementary SQLite database scan if needed
+                    if not context_text:
+                        with get_db() as db:
+                            colleges = db.query(College).limit(5).all()
+                            context_text = "Top Benchmark Institutions Available:\n" + "\n".join(
+                                [f"- {c.name} ({c.code}): NIRF #{c.nirf_rank_2025}, Median CTC: ₹{c.median_ctc_lpa} LPA, CET Fee: ₹{c.govt_fee_cet_lakhs}L" for c in colleges]
+                            )
                 except Exception:
-                    context_text = "Standard institutional guidelines apply."
+                    context_text = "Standard institutional guidelines apply for autonomous engineering colleges in Karnataka."
 
                 # Formulate intelligent response based on query keywords
                 q_lower = user_query.lower()
-                if "which college" in q_lower or "select" in q_lower or "recommend" in q_lower:
+                if "which college" in q_lower or "select" in q_lower or "recommend" in q_lower or "colleges" in q_lower:
                     response_text = (
-                        "Based on your aspirant profile and active benchmarks:\n\n"
+                        "Based on your aspirant profile and active institutional benchmarks:\n\n"
                         "1. **RV College of Engineering (RVCE)**: Best for core computing, high-compute GPU research labs, and top-tier product placements (Median CTC ~₹15 LPA).\n"
                         "2. **BMS College of Engineering (BMSCE)**: Exceptional alumni network, strong urban Bengaluru location, and robust core branch placements.\n"
                         "3. **Ramaiah Institute of Technology (MSRIT)**: Excellent ROI with balanced government fee structures and active industry incubation partnerships.\n\n"
@@ -83,7 +102,7 @@ def render_multimodal_chat():
                 else:
                     response_text = (
                         f"I analyzed your query against our institutional database. Here is what you need to know:\n\n"
-                        f"{context_text[:500]}...\n\n"
+                        f"{context_text}\n\n"
                         "Feel free to specify if you want details on hostel facilities, scholarship concessions, or lateral entry rules."
                     )
 
