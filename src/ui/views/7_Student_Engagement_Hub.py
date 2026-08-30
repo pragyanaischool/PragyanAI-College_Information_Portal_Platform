@@ -16,7 +16,7 @@ from src.db.models import AdmissionLead
 
 def render_student_engagement_view(current_role: UserRole):
     """Renders student-shown interest, live inquiries, and feedback pipelines."""
-    st.title("💬 Student Interest & Inquiry Engagement Hub")
+    st.title(" Student Interest & Inquiry Engagement Hub")
     st.markdown("Monitor prospective student engagement signals, direct questions, feedback, and campus suggestions in real-time.")
     st.markdown("---")
 
@@ -48,27 +48,27 @@ def render_student_engagement_view(current_role: UserRole):
 
     # Tabs for Engagement Categories
     tab_inquiries, tab_interests, tab_suggestions = st.tabs([
-        "❓ Student Questions & Inquiries",
-        "🔥 Shown Interest & Quota Intent",
-        "💡 Student Suggestions & Feedback"
+        "1. Student Questions & Inquiries",
+        "2. Shown Interest & Quota Intent",
+        "3. Student Suggestions & Feedback"
     ])
 
     # -------------------------------------------------------------------------
     # TAB 1: STUDENT QUESTIONS & INQUIRIES
     # -------------------------------------------------------------------------
     with tab_inquiries:
-        st.subheader("❓ Live Student Questions & Admissions Queries")
+        st.subheader(" Live Student Questions & Admissions Queries")
         st.markdown("Direct inquiries submitted by prospective applicants regarding fee structures, branch availability, and lab access.")
 
         st.dataframe(pd.DataFrame(st.session_state.session_inquiries), use_container_width=True)
 
-        st.markdown("### ✍️ Submit New Student Question / Inquiry")
+        st.markdown("###  Submit New Student Question / Inquiry")
         with st.form("new_student_query_form"):
             q_name = st.text_input("Your Full Name:")
             q_email = st.text_input("Email Address / Phone:")
             q_branch = st.selectbox("Target Engineering Branch", ["Computer Science & Eng", "Artificial Intelligence & DS", "Information Science", "Electronics & Communication", "Mechanical Eng"])
             q_text = st.text_area("Your Question / Query:")
-            if st.form_submit_button("🚀 Submit Question to Admissions Desk", type="primary"):
+            if st.form_submit_button(" Submit Question to Admissions Desk", type="primary"):
                 if q_name.strip() and q_text.strip():
                     new_id = f"L-{100 + len(st.session_state.session_inquiries) + 1}"
                     st.session_state.session_inquiries.append({
@@ -79,12 +79,12 @@ def render_student_engagement_view(current_role: UserRole):
                         "Query / Question": q_text.strip(),
                         "Status": "New"
                     })
-                    st.success("🎉 Your question has been successfully transmitted to the admissions counselor desk!")
+                    st.success(" Your question has been successfully transmitted to the admissions counselor desk!")
                     st.rerun()
                 else:
                     st.warning("Please provide your name and question details.")
 
-        st.markdown("### ⚙️ Action: Respond to Student Inquiry")
+        st.markdown("###  Action: Respond to Student Inquiry")
         if st.session_state.session_inquiries:
             col_sel1, col_sel2 = st.columns(2)
             with col_sel1:
@@ -93,7 +93,7 @@ def render_student_engagement_view(current_role: UserRole):
                 new_stat = st.selectbox("Update Status", ["New", "Contacted", "Verified", "Resolved"], key="eng_stat_sel")
 
             response_text = st.text_area("Draft Direct Email / SMS Response:")
-            if st.button("📤 Send Official Institutional Response", type="primary"):
+            if st.button(" Send Official Institutional Response", type="primary"):
                 for item in st.session_state.session_inquiries:
                     if item["Student Name"] == selected_student:
                         item["Status"] = new_stat
@@ -104,7 +104,7 @@ def render_student_engagement_view(current_role: UserRole):
     # TAB 2: SHOWN INTEREST & QUOTA INTENT
     # -------------------------------------------------------------------------
     with tab_interests:
-        st.subheader("🔥 Students Who Showed Direct Interest")
+        st.subheader(" Students Who Showed Direct Interest")
         st.markdown("Telemetry of prospective candidates bookmarking programs, checking fee structures, and exploring campus tours.")
 
         interest_data = [
@@ -119,16 +119,16 @@ def render_student_engagement_view(current_role: UserRole):
     # TAB 3: STUDENT SUGGESTIONS & FEEDBACK
     # -------------------------------------------------------------------------
     with tab_suggestions:
-        st.subheader("💡 Student & Counselor Suggestions for Institutional Growth")
+        st.subheader(" Student & Counselor Suggestions for Institutional Growth")
         st.markdown("Crowd-sourced recommendations submitted during campus outreach webinars and tech symposiums.")
 
         st.dataframe(pd.DataFrame(st.session_state.session_suggestions), use_container_width=True)
 
-        st.markdown("### ✍️ Submit New Student / Counselor Suggestion")
+        st.markdown("###  Submit New Student / Counselor Suggestion")
         with st.form("submit_suggestion_form"):
             s_cat = st.selectbox("Suggestion Category", ["Curriculum", "Infrastructure", "Placements", "Hostel Life", "Research"])
             s_text = st.text_input("Suggestion Description:")
-            if st.form_submit_button("🚀 Submit Suggestion for Review", type="primary"):
+            if st.form_submit_button(" Submit Suggestion for Review", type="primary"):
                 if s_text.strip():
                     st.session_state.session_suggestions.append({
                         "Category": s_cat,
@@ -136,7 +136,7 @@ def render_student_engagement_view(current_role: UserRole):
                         "Votes": 1,
                         "Status": "Under Review"
                     })
-                    st.success("🎉 Suggestion successfully logged and added to the institutional review queue!")
+                    st.success(" Suggestion successfully logged and added to the institutional review queue!")
                     st.rerun()
                 else:
                     st.warning("Please enter suggestion details before submitting.")
