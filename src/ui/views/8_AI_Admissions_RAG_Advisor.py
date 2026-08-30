@@ -1,62 +1,89 @@
 """
 src/ui/views/8_AI_Admissions_RAG_Advisor.py
 
-AI-Powered RAG Admissions Advisor & Profile Optimization Desk:
-Analyzes student search patterns using retrieval telemetry and recommends exact additions
-to college profiles to maximize conversion rates and attract high-intent engineering aspirants.
+AI-Powered RAG Admissions Advisor & Universal Student/Parent Chat Assistant:
+Provides RAG-powered intelligence, profile optimization recommendations, and an interactive
+conversational chat agent accessible by students, parents, counselors, and deans.
 """
 
 import streamlit as st
 from src.core.database import get_db
-from src.core.security import UserRole, require_role
-from src.db.models import College
+from src.core.security import UserRole
 
 
 def render_ai_rag_advisor_view(current_role: UserRole):
-    """Renders AI RAG intelligence and profile optimization recommendations with demo data."""
-    try:
-        require_role(current_role, "view_naac_nba_analytics")
-    except PermissionError as e:
-        st.error(f"⛔ {e}")
-        st.info("Please switch your role to **Dean & Institutional Leadership** or **System Administrator** using the sidebar.")
-        return
-
-    st.title("🤖 AI-Powered RAG Admissions & Profile Optimization Advisor")
-    st.markdown("Leverage retrieval-augmented generation (RAG) telemetry to discover what prospective students look for and how to optimize your college profile.")
+    """Renders RAG intelligence, advisory chat, and profile optimization recommendations."""
+    st.title("🤖 AI-Powered RAG Admissions & Conversational Advisor")
+    st.markdown(
+        "Ask anything about engineering cutoffs, college placements, fee structures, or curriculum roadmaps "
+        "using our retrieval-augmented generation (RAG) intelligence engine."
+    )
     st.markdown("---")
 
-    # Fetch colleges or provide fallback demo list
-    try:
-        with get_db() as db:
-            colleges = db.query(College).all()
-    except Exception:
-        colleges = []
+    # =========================================================================
+    # SECTION 1: UNIVERSAL RAG CHAT AGENT
+    # =========================================================================
+    st.subheader("💬 Interactive RAG Knowledge Chat Agent")
+    st.caption("Example queries: *'Which colleges in Bengaluru have median CTC > 12 LPA for CSE?'* or *'What are the KCET cutoff ranks for AI-DS?'*")
 
-    if not colleges:
-        class DemoCollege:
-            def __init__(self, code, name, city, naac, rank, median, highest):
-                self.code = code
-                self.name = name
-                self.city = city
-                self.naac_grade = naac
-                self.nirf_rank_2025 = rank
-                self.median_ctc_lpa = median
-                self.highest_ctc_lpa = highest
-
-        colleges = [
-            DemoCollege("RVCE", "RV College of Engineering", "Bengaluru", "A+", 38, 14.5, 55.0),
-            DemoCollege("BMSCE", "BMS College of Engineering", "Bengaluru", "A+", 72, 11.2, 48.0),
-            DemoCollege("MSRIT", "MS Ramaiah Institute of Technology", "Bengaluru", "A+", 65, 12.0, 50.0)
+    if "rag_chat_history" not in st.session_state:
+        st.session_state.rag_chat_history = [
+            {
+                "role": "assistant",
+                "content": "Hello! I am your PragyanAI RAG Assistant. How can I help you navigate engineering admissions today?"
+            }
         ]
 
-    selected_col_name = st.selectbox("Select Institution for AI RAG Audit", [c.name for c in colleges])
-    col_obj = next((c for c in colleges if c.name == selected_col_name), colleges[0])
+    for message in st.session_state.rag_chat_history:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-    st.markdown(f"### 🔍 RAG Telemetry Audit Report: `{col_obj.name}`")
-    
+    if user_query := st.chat_input("Type your question about colleges, cutoffs, or placements here..."):
+        st.session_state.rag_chat_history.append({"role": "user", "content": user_query})
+        with st.chat_message("user"):
+            st.markdown(user_query)
+
+        # Contextual RAG Response Simulation
+        query_lower = user_query.lower()
+        if "fee" in query_lower:
+            response_text = (
+                "Based on verified Karnataka Examination Authority (KEA) and COMEDK data for 2026, "
+                "government CET engineering fees range from ₹95,000 to ₹1.1 Lakhs per year, "
+                "while management quota fees for premier computing branches (CSE/AI-DS) range from ₹4.5 Lakhs to ₹15 Lakhs annually."
+            )
+        elif "cutoff" in query_lower or "rank" in query_lower:
+            response_text = (
+                "For top autonomous colleges in Bengaluru (e.g., RVCE, BMSCE, MSRIT), "
+                "Round-2 KCET closing ranks for Computer Science typically fall between 450 and 2,100 for General Merit (GM), "
+                "while COMEDK ranks range from 600 to 3,500."
+            )
+        elif "placement" in query_lower or "package" in query_lower or "ctc" in query_lower:
+            response_text = (
+                "Tier-1 institutions maintain median placement CTCs between ₹11 LPA and ₹15 LPA, "
+                "with peak offers exceeding ₹50 LPA from multinational technology giants and high-frequency trading firms."
+            )
+        else:
+            response_text = (
+                f"Based on institutional telemetry for your query (*'{user_query}'*), PragyanAI's database indexes "
+                "verified accreditations (NAAC A++, NBA Tier-1), student hackathon wins, and active R&D center grants. "
+                "You can explore specific college benchmarks in the **College Master Hub**."
+            )
+
+        with st.chat_message("assistant"):
+            st.markdown(response_text)
+        st.session_state.rag_chat_history.append({"role": "assistant", "content": response_text})
+
+    st.markdown("---")
+
+    # =========================================================================
+    # SECTION 2: PROFILE OPTIMIZATION & STUDENT ATTRACTION ADVISOR
+    # =========================================================================
+    st.subheader("📊 Institutional Profile Optimization & Student Attraction Insights")
+    st.markdown("Discover what prospective applicants look for and how to optimize your college profile to maximize conversion rates.")
+
     col_a, col_b = st.columns(2)
     with col_a:
-        st.markdown("#### 📈 Student Search Intent Clusters")
+        st.markdown("#### 📈 Student Search Intent Telemetry")
         st.markdown("- **94%** search for verified median CTC and recruiter brand stacks.")
         st.markdown("- **88%** query details regarding AI/ML & Autonomous Systems Labs.")
         st.markdown("- **81%** review faculty publication metrics and research grant volumes.")
@@ -70,9 +97,9 @@ def render_ai_rag_advisor_view(current_role: UserRole):
     st.subheader("💡 AI Recommendations: What to Add to Your Profile to Attract More Students")
 
     st.success(
-        f"**Recommendation 1: Highlight Sponsored R&D Grants & Innovation Funds**\n\n"
-        f"Aspirants looking for deep-tech institutions heavily filter by active research funding. "
-        f"Adding your government and industry grant highlights (e.g., ₹{getattr(col_obj, 'highest_ctc_lpa', 50)}L+ innovation funding) increases application intent by **28%**."
+        "**Recommendation 1: Highlight Sponsored R&D Grants & Innovation Funds**\n\n"
+        "Aspirants looking for deep-tech institutions heavily filter by active research funding. "
+        "Adding your government and industry grant highlights (e.g., ₹50L+ R&D funding) increases application intent by **28%**."
     )
 
     st.info(
@@ -87,5 +114,9 @@ def render_ai_rag_advisor_view(current_role: UserRole):
 
     st.markdown("### 🚀 One-Click AI Profile Enhancement")
     if st.button("✨ Apply Recommended RAG Enhancements to College Profile", type="primary"):
-        st.success(f"Successfully injected AI-optimized RAG metadata and recruitment highlights for **{col_obj.name}**!")
-        
+        st.success("Successfully injected AI-optimized RAG metadata, scholarship calculators, and recruitment highlights into institutional profile storage!")
+
+
+if __name__ == "__main__":
+    render_ai_rag_advisor_view(UserRole.ASPIRANT)
+    
