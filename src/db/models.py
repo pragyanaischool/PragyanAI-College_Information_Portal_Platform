@@ -9,15 +9,15 @@ faculty research profiles, cutoffs, student records, event management, and candi
 import uuid
 from datetime import datetime
 from sqlalchemy import (
-    Column,
-    String,
-    Integer,
-    Float,
     Boolean,
-    Text,
+    Column,
     DateTime,
+    Float,
     ForeignKey,
-    JSON
+    Integer,
+    JSON,
+    String,
+    Text,
 )
 from sqlalchemy.orm import declarative_base, relationship
 
@@ -256,7 +256,6 @@ class CandidateProfile(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
-# Explicit module exports to satisfy __all__ checks
 __all__ = [
     "Base",
     "College",
