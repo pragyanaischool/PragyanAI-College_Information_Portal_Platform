@@ -287,6 +287,7 @@ def render_aspirant_view():
                 st.session_state.aspirant_journey_step = 5
                 st.rerun()
 
+    
     # -------------------------------------------------------------------------
     # TAB 5: Step 5 - Voice of the Stakeholders (Alumni, Students, Recruiters, Leadership)
     # -------------------------------------------------------------------------
